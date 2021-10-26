@@ -1,0 +1,77 @@
+CREATE DATABASE hotel;
+\c hotel;
+
+create TABLE manager(
+  manager_id serial PRIMARY KEY,
+  last_name VARCHAR(30) NOT null,
+  first_name VARCHAR(20) NOT null,
+  patronimic VARCHAR(20),
+  passport_series VARCHAR(4) NOT null 
+  CONSTRAINT valid_manager_passport_series CHECK (passport_series ~ '\d{4}'),
+  passport_number VARCHAR(6) NOT null
+  CONSTRAINT valid_manager_passport_number CHECK (passport_number ~ '\d{6}'),
+  CONSTRAINT unique_manager_passport UNIQUE (passport_series, passport_number),
+  phone VARCHAR(10)
+  CONSTRAINT valid_manager_phone_number CHECK (phone ~ '\d{10}'));
+
+create TABLE guest(
+  guest_id serial PRIMARY KEY,
+  last_name VARCHAR(30) NOT null,
+  first_name VARCHAR(20) NOT null,
+  patronimic VARCHAR(20),
+  passport_series VARCHAR(4) NOT null
+  CONSTRAINT valid_guest_passport_series CHECK (passport_series ~ '\d{4}'),
+  passport_number VARCHAR(6) NOT null
+  CONSTRAINT valid_guest_passport_number CHECK (passport_number ~ '\d{6}'),
+  CONSTRAINT unique_guest_passport UNIQUE (passport_series, passport_number),
+  phone VARCHAR(10)
+  CONSTRAINT valid_guest_phone_number CHECK (phone ~ '\d{10}'));
+
+CREATE TABLE hotel_room(
+  hotel_room_id INT PRIMARY KEY,
+  price_per_day NUMERIC(7, 2) NOT null,
+  number_of_rooms INTEGER DEFAULT 1,
+  area INTEGER NOT null,
+  service_class VARCHAR(8) DEFAULT 'стандарт'
+  CONSTRAINT valid_service_class CHECK (service_class IN ('стандарт', 'комфорт', 'люкс')),
+  kitchen BOOL DEFAULT FALSE);
+
+CREATE TABLE booking(
+  booking_id SERIAL PRIMARY KEY,
+  booking_date DATE DEFAULT CURRENT_DATE,
+  CONSTRAINT valid_booking_date CHECK(booking_date <= arrival),
+  arrival DATE,
+  departure DATE
+  CONSTRAINT valid_arrival_departure_dates CHECK(departure > arrival),
+  total_cost NUMERIC(8, 2),
+  hotel_room_id INTEGER REFERENCES hotel_room
+  ON DELETE SET null
+  ON UPDATE CASCADE,
+  CONSTRAINT valid_booking UNIQUE (arrival, departure, hotel_room_id),
+  bank_card VARCHAR(19)
+  CONSTRAINT valid_card CHECK (bank_card ~ '\d{13-19}'));
+
+CREATE TABLE booking_guests(
+   booking_id INTEGER REFERENCES booking
+   ON DELETE CASCADE,
+   guest_id INTEGER REFERENCES guest
+   ON DELETE CASCADE);
+
+CREATE OR REPLACE FUNCTION calc_cost()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $BODY$
+BEGIN
+NEW.total_cost := (SElECT hotel_room.price_per_day *
+                    (NEW.departure - NEW.arrival)
+                    FROM hotel_room);
+RETURN NEW;
+END
+$BODY$;
+
+CREATE TRIGGER cost_trigger
+BEFORE INSERT OR UPDATE
+ON booking
+FOR EACH ROW
+EXECUTE PROCEDURE calc_cost();
