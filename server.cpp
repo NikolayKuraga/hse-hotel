@@ -35,9 +35,7 @@ int Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     return info;
 }
 
-
-
-int main(int argc, char ** argv) {
+int main(int argc, char *argv[]) {
 
     int sockServer = Socket(AF_INET, SOCK_STREAM, 0);
     int sockClient = Socket(AF_INET, SOCK_STREAM, 0);
@@ -59,5 +57,7 @@ int main(int argc, char ** argv) {
 
     std::cout << "A client successfully connected!" << std::endl;
 
+    close(sockClient);
+    close(sockServer);
     return 0;
 }

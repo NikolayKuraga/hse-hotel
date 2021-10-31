@@ -11,16 +11,17 @@ int Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 int main(int argc, char ** argv) {
 
-    int sockClient = Socket(AF_INET, SOCK_STREAM, 0);
+    int sockServer = Socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in addrServer = { 0 };
 
     addrServer.sin_family = AF_INET;
     addrServer.sin_port = htons(PORT);
     addrServer.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    Connect(sockClient, (struct sockaddr *) &addrServer, sizeof(addrServer));
+    Connect(sockServer, (struct sockaddr *) &addrServer, sizeof(addrServer));
 
     std::cout << "Successfully connected to the server!" << std::endl;
 
+    close(sockServer);
     return 0;
 }
