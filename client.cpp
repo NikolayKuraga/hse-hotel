@@ -1,35 +1,50 @@
 #include "client.hpp"
 
+int Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+    int info = connect(sockfd, addr, addrlen);
+    if (info == -1) {
+        perror("connect() failed");
+        exit(EXIT_FAILURE);
+    }
+    return info;
+}
+
 FrameWelcome::FrameWelcome(const wxString &title, const wxPoint &pos, const wxSize &size) : wxFrame(nullptr, wxID_ANY, title, pos, size) {
     SetIcon(wxIcon(wxT(PATH_ICON)));
-    
-    wxPanel *panel1 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    panel1 -> SetBackgroundColour(wxColor(200, 200, 50));
-
-    wxPanel *panel2 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    panel2 -> SetBackgroundColour(wxColor(50, 50, 50));
-
-    wxButton *buttonCall = new wxButton(this, wxID_ANY, wxT("Better call Saul!"), wxDefaultPosition, wxDefaultSize);
-
-    wxButton *buttonExit = new wxButton(this, wxID_EXIT, wxT("Exit"), wxDefaultPosition, wxDefaultSize);
-    Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnExit));
-    
-    wxButton *buttonAbout = new wxButton(this, wxID_ABOUT, wxT("About"), wxDefaultPosition, wxDefaultSize);
+    // panels
+    wxPanel *panelTop = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel *panelBottomLeft = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel *panelBottomRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    panelTop -> SetBackgroundColour(wxColor(50, 150, 0));
+    panelBottomLeft -> SetBackgroundColour(wxColor(130, 40, 200));
+    panelBottomRight -> SetBackgroundColour(wxColor(40, 20, 140));
+    // buttons
+    buttonCallSaul = new wxButton(panelTop, ID_CALLSAUL, wxT("Better call Saul!"), wxDefaultPosition, wxDefaultSize);
+    wxButton *buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, wxT("About"), wxDefaultPosition, wxDefaultSize);
+    wxButton *buttonExit = new wxButton(panelBottomRight, wxID_EXIT, wxT("Exit"), wxDefaultPosition, wxDefaultSize);
+    Connect(ID_CALLSAUL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnCallSaul));
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnAbout));
+    Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnExit));
+    // sizers
+    wxBoxSizer *vSizerTop = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vSizerBottomLeft = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vSizerBottomRight = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *hSizerBottom = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *vSizerMain = new wxBoxSizer(wxVERTICAL);
+    vSizerTop -> Add(buttonCallSaul, 0, wxALIGN_CENTER | wxALL, 10);
+    vSizerBottomLeft -> Add(buttonAbout, 0, wxALIGN_LEFT | wxALL, 10);
+    vSizerBottomRight -> Add(buttonExit, 0, wxALIGN_RIGHT | wxALL, 10);
+    hSizerBottom -> Add(panelBottomLeft, 1, wxEXPAND, 0);
+    hSizerBottom -> Add(panelBottomRight, 1, wxEXPAND, 0);
+    vSizerMain -> Add(panelTop, 1, wxEXPAND, 0);
+    vSizerMain -> Add(hSizerBottom, 0, wxEXPAND, 0);
+    panelBottomRight -> SetSizer(vSizerBottomRight);
+    panelBottomLeft -> SetSizer(vSizerBottomLeft);
+    panelTop -> SetSizer(vSizerTop);
+    this -> SetSizer(vSizerMain);
 
-    wxBoxSizer *vSizer = new wxBoxSizer(wxHORIZONTAL);
-    vSizer -> Add(buttonAbout, 0, wxEXPAND, 0);
-    vSizer -> Add(panel2, 1, wxEXPAND, 0);
-    vSizer -> Add(buttonExit, 0, wxEXPAND, 0);
-
-    wxBoxSizer *hSizer = new wxBoxSizer(wxVERTICAL);
-    hSizer -> Add(buttonCall, 0, wxALIGN_CENTER | wxTOP, 10);
-    hSizer -> Add(panel1, 1, wxEXPAND, 0);
-    hSizer -> Add(vSizer, 0, wxEXPAND, 0);
-
-    buttonAbout -> SetFocus();
-    this -> SetSizer(hSizer);
-
+    buttonCallSaul -> SetFocus();
+    SetMinSize(wxSize(220, 150));
     Centre();
 };
 
@@ -38,14 +53,18 @@ void FrameWelcome::OnExit(wxCommandEvent &event) {
 }
 
 void FrameWelcome::OnAbout(wxCommandEvent &event) {
-    wxMessageBox("Hse Hostel Client, build 2021.10.31.", "About HSE Hostel Client", wxOK | wxICON_INFORMATION);
+    wxMessageBox((std::string) "HSE Hostel Client, ver." + VERSION + "\n" + GITHUB, "About HSE Hostel Client", wxOK | wxICON_INFORMATION);
 }
 
-wxIMPLEMENT_APP(ClientApp);
+void FrameWelcome::OnCallSaul(wxCommandEvent &event) {
+    buttonCallSaul -> Enable(false);
+}
 
-bool ClientApp::OnInit() {
-    FrameWelcome *welcomeFrame = new FrameWelcome("HSE Hostel Client", wxDefaultPosition, wxDefaultSize);
-    welcomeFrame -> Show(true);
+wxIMPLEMENT_APP(AppClient);
+
+bool AppClient::OnInit() {
+    FrameWelcome *frameWelcome = new FrameWelcome("HSE Hostel Client", wxDefaultPosition, wxDefaultSize);
+    frameWelcome -> Show(true);
     return true;
 }
 
