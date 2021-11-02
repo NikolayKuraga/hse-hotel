@@ -49,6 +49,47 @@ CREATE TABLE booking_guest(
    ON DELETE CASCADE,
    PRIMARY KEY (booking_id, guest_id));
 
+CREATE OR REPLACE FUNCTION is_room_available()
+RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF EXISTS (SELECT booking_id FROM booking
+                      WHERE (NEW.hotel_room_id = booking.hotel_room_id AND
+                      (NEW.arrival, NEW.departure) OVERLAPS (booking.arrival, booking.departure)
+                      AND NEW.booking_id != booking.booking_id))
+THEN
+	RAISE EXCEPTION 'booking dates cannot overlap for the same room';
+END IF;
+RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER available_room_trigger
+BEFORE INSERT OR UPDATE OF arrival, departure, hotel_room_id
+ON booking
+FOR EACH ROW
+EXECUTE PROCEDURE is_room_available();
+
+CREATE OR REPLACE FUNCTION calc_cost()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+NEW.total_cost := (SELECT hotel_room.price_per_day *
+                    (NEW.departure - NEW.arrival)
+                    FROM hotel_room
+                    WHERE NEW.hotel_room_id = hotel_room.hotel_room_id);
+RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER cost_trigger
+BEFORE INSERT OR UPDATE OF arrival, departure, hotel_room_id
+ON booking
+FOR EACH ROW
+EXECUTE PROCEDURE calc_cost();
+
 INSERT INTO guest(last_name, first_name, passport_series, passport_number) VALUES 
   ('Ivanov', 'Ivan', '1111', '111111'),
   ('Petrov', 'Pyotr', '2222', '222222'),
@@ -64,6 +105,71 @@ INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
   ('2021-12-27'::DATE, '2021-12-30'::DATE, 1),
   ('2021-12-30'::DATE, '2022-01-08'::DATE, 2),
   ('2022-01-03'::DATE, '2022-01-05'::DATE, 3);
+
+/*here are some tests to check how available_room_trigger and cost_trigger work*/
+
+/*correct, total_cost = 3 * 2000 = 6000*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+  ('2021-12-27'::DATE, '2021-12-30'::DATE, 1);*/
+
+/*wrong - the dates overlap for the same room*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+  ('2021-12-28'::DATE, '2021-12-31'::DATE, 1);*/
+
+/*correct, total_cost = 5 * 2000 = 10000*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+  ('2021-12-30'::DATE, '2022-01-04'::DATE, 1);*/
+
+/*correct, total_cost = 2 * 2000 = 4000*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+  ('2022-01-05'::DATE, '2022-01-07'::DATE, 1);*/
+
+/*correct, the dates overlap, but the rooms are different,
+total_cost = 9 * 2500 = 22500*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+  ('2021-12-30'::DATE, '2022-01-08'::DATE, 2);*/
+
+/*correct, changing the departure date so that the dates do not overlap,
+total_cost = 8 * 2500 = 20000*/
+/*UPDATE booking
+SET departure = '2022-01-07'::DATE
+WHERE (arrival = '2021-12-30'::DATE AND 
+departure = '2022-01-08'::DATE AND
+hotel_room_id = 2);*/
+
+/*wrong, changing the arrival date so that the dates overlap*/
+/*UPDATE booking
+SET arrival = '2022-01-03'::DATE    
+WHERE (arrival = '2022-01-05'::DATE AND
+departure = '2022-01-07'::DATE AND 
+hotel_room_id = 1);*/
+
+/*correct, changing the room so that the dates do not overlap,
+total_cost = 2 * 3200 = 6400*/
+/*UPDATE booking
+SET hotel_room_id = 3 
+WHERE (arrival = '2022-01-05'::DATE AND
+departure = '2022-01-07'::DATE AND 
+hotel_room_id = 1);*/
+
+/*wrong, changing the room so that the dates overlap*/
+/*UPDATE booking
+SET hotel_room_id = 2
+WHERE (arrival = '2022-01-05'::DATE AND
+departure = '2022-01-07'::DATE AND
+hotel_room_id = 3);*/
+
+/*when the price changes, 
+the total cost in already done booking operations does not change*/  
+/*UPDATE hotel_room
+SET price_per_day = 3500
+WHERE hotel_room_id = 3;*/
+
+/*but a new price has an effect on new booking operations,
+total_cost = 2 * 3500 = 7000*/
+/*INSERT INTO booking(arrival, departure, hotel_room_id) VALUES
+   ('2022-01-08'::DATE, '2022-01-10'::DATE, 3);*/
+
 
 INSERT INTO booking_guest(booking_id, guest_id) VALUES
 ((SELECT booking_id FROM booking b 
