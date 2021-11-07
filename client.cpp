@@ -15,6 +15,7 @@ FrameWelcome::FrameWelcome(const wxString &title, const wxPoint &pos, const wxSi
     wxButton *buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, wxT("About"), wxDefaultPosition, wxDefaultSize);
     wxButton *buttonExit = new wxButton(panelBottomRight, wxID_EXIT, wxT("Exit"), wxDefaultPosition, wxDefaultSize);
     Connect(ID_CONNECT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnConnect));
+    Connect(ID_SEND_SIGNAL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnSendSignal));
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnAbout));
     Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameWelcome::OnExit));
     buttonSendSignal -> Enable(false);
@@ -43,8 +44,8 @@ FrameWelcome::FrameWelcome(const wxString &title, const wxPoint &pos, const wxSi
 };
 
 void FrameWelcome::OnConnect(wxCommandEvent &event) {
-    sockServer = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockServer == -1) {
+    fdSockServer = socket(AF_INET, SOCK_STREAM, 0);
+    if (fdSockServer == -1) {
         wxMessageBox("The connection has not been established:\nsocket() failed", "Error", wxOK | wxICON_ERROR);
         return;
     }
@@ -54,7 +55,7 @@ void FrameWelcome::OnConnect(wxCommandEvent &event) {
     addrServer.sin_port = htons(PORT);
     addrServer.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    int check = connect(sockServer, (struct sockaddr *) &addrServer, sizeof(addrServer));
+    int check = connect(fdSockServer, (struct sockaddr *) &addrServer, sizeof(addrServer));
     if (check == -1) {
         wxMessageBox("The connection has not been established:\nconnect() failed", "Error", wxOK | wxICON_ERROR);
         return;
@@ -62,8 +63,15 @@ void FrameWelcome::OnConnect(wxCommandEvent &event) {
     wxMessageBox("The connection has been established", "Success", wxOK | wxICON_INFORMATION);
 
     buttonConnect -> Enable(false);
-//    buttonSendSignal -> Enable(true);
-    wxMessageBox("The connection was broken", "Warning", wxOK | wxICON_EXCLAMATION);
+    buttonSendSignal -> Enable(true);
+//    wxMessageBox("The connection was broken", "Warning", wxOK | wxICON_EXCLAMATION);
+}
+
+void FrameWelcome::OnSendSignal(wxCommandEvent &event) {
+    std::string msg = "Hello, Server!";
+    cstm::sendStr(fdSockServer, &msg);
+    cstm::recvStr(fdSockServer, &msg);
+    wxMessageBox(msg, "Message from the server", wxOK | wxICON_INFORMATION);
 }
 
 void FrameWelcome::OnAbout(wxCommandEvent &event) {
@@ -71,7 +79,7 @@ void FrameWelcome::OnAbout(wxCommandEvent &event) {
 }
 
 void FrameWelcome::OnExit(wxCommandEvent &event) {
-    close(sockServer);
+    close(fdSockServer);
     Close(true);
 }
 
