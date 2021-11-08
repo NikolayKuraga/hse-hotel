@@ -40,7 +40,7 @@ CREATE TABLE booking(
   ON UPDATE CASCADE,
   CONSTRAINT valid_booking UNIQUE (arrival, departure, hotel_room_id),
   bank_card VARCHAR(19)
-  CONSTRAINT valid_card CHECK (bank_card ~ '\d{13-19}'));
+  CONSTRAINT valid_card CHECK (bank_card ~ '\d{13, 19}'));
 
 CREATE TABLE booking_guest(
    booking_id INTEGER REFERENCES booking
@@ -172,28 +172,28 @@ total_cost = 2 * 3500 = 7000*/
 
 
 INSERT INTO booking_guest(booking_id, guest_id) VALUES
-((SELECT booking_id FROM booking b 
+((SELECT booking_id FROM booking AS b 
 WHERE b.arrival = '2021-12-27'::DATE AND b.departure = '2021-12-30'::DATE AND b.hotel_room_id = 1),
 (SELECT guest_id FROM guest
 WHERE guest.passport_series = '2222' AND guest.passport_number = '222222')),
-((SELECT booking_id FROM booking b 
+((SELECT booking_id FROM booking AS b 
 WHERE b.arrival = '2021-12-30'::DATE AND b.departure = '2022-01-08'::DATE AND b.hotel_room_id = 2),
 (SELECT guest_id FROM guest
 WHERE guest.passport_series = '3333' AND guest.passport_number = '333333')),
-((SELECT booking_id FROM booking b 
+((SELECT booking_id FROM booking AS b 
 WHERE b.arrival = '2022-01-03'::DATE AND b.departure = '2022-01-05'::DATE AND b.hotel_room_id = 3),
 (SELECT guest_id FROM guest
 WHERE guest.passport_series = '4444' AND guest.passport_number = '444444')),
-((SELECT booking_id FROM booking b 
+((SELECT booking_id FROM booking AS b 
 WHERE b.arrival = '2022-01-03'::DATE AND b.departure = '2022-01-05'::DATE AND b.hotel_room_id = 3),
 (SELECT guest_id FROM guest
 WHERE guest.passport_series = '1111' AND guest.passport_number = '111111'));
 
 /*query to get free rooms for dates specified by the user
 (e.g. from 2021-12-27 to 2021-12-29)*/
-SELECT * FROM hotel_room r
+SELECT * FROM hotel_room AS r
 WHERE r.hotel_room_id NOT IN
 (SELECT b.hotel_room_id
-FROM booking b
+FROM booking AS b
 WHERE ('2021-12-27'::DATE, '2021-12-29'::DATE)
 OVERLAPS (b.arrival, b.departure));
