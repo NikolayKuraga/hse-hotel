@@ -75,7 +75,7 @@ void FrameWelcome::OnSendSignal(wxCommandEvent &event) {
 }
 
 void FrameWelcome::OnAbout(wxCommandEvent &event) {
-    wxMessageBox((std::string) "HSE Hostel Client, ver." + VERSION + "\n" + GITHUB, "About HSE Hostel Client", wxOK | wxICON_INFORMATION);
+    wxMessageBox((std::string) "HSE Hostel Client, ver." + VERSION + ", client\n" + GITHUB, "About HSE Hostel Client", wxOK | wxICON_INFORMATION);
 }
 
 void FrameWelcome::OnExit(wxCommandEvent &event) {

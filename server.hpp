@@ -5,10 +5,10 @@
 
 #include <thread>
 #include <mutex>
+#include <sstream>
 #include <vector>
 
-#define COMMAND_LINE_PROMPT " >> "
-#define LEN_QUEUE           5
+#define LEN_QUEUE 5
 
 void DealWithClient(int *p_fdSockClient, sockaddr_in *p_addrClient, socklen_t *p_lenAddrClient);
 void AcceptClients(int *p_fdSockServer);
