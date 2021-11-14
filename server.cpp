@@ -1,42 +1,44 @@
 #include "server.hpp"
 
 //// Shared memory section
-//std::mutex mutexF;
+std::mutex mtx;
 std::vector<std::thread> vctrThreads; // vector of threads excepting main() function thread
 
 // command line prompt
 const char promptCmd[] = { " >> " };
 // notifications bounds
-const char NtfctnInfBgg[] = { "...\n[i] " };
-const char NtfctnInfEnd[] = { " [Inf]\n" };
-const char NtfctnMsgBgg[] = { "...\n[@] " };
-const char NtfctnMsgEnd[] = { " [Msg]\n" };
-const char NtfctnWrnBgg[] = { "...\n[!] " };
-const char NtfctnWrnEnd[] = { " [Wrn]\n" };
+const std::string bndsNtfctnInf[] = { "...\n[i] ", " [Inf]\n" };
+const std::string bndsNtfctnMsg[] = { "...\n[@] ", " [Msg]\n" };
+const std::string bndsNtfctnWrn[] = { "...\n[!] ", " [Wrn]\n" };
 //// The end of shared memory section
+
+// Function for printring message and cmd prompt (P -- printing)
+void PrintMes(const std::string PTxt, const std::string PBnds[2], const std::string PPrompt = promptCmd) {
+    mtx.lock();
+    std::cout << PBnds[0] << PTxt << PBnds[1] << PPrompt;
+    std::cout.flush();
+    mtx.unlock();
+}
 
 // Function for communication with client
 void DealWithClient(int *p_fdSockClient, sockaddr_in *p_addrClient, socklen_t *p_lenAddrClient) {
     int info = 0;
     std::string msg;
-    std::cout << NtfctnInfBgg << "Another client has connected" << NtfctnInfEnd << promptCmd;
-    std::cout.flush();
+
+    PrintMes("Another client has connected", bndsNtfctnInf);
 
     for(;;) {
         info = cstm::recvStr(*p_fdSockClient, &msg);
         if(info == -1) {
-            std::cout << NtfctnWrnBgg << "A client was suddenly disconnected" << NtfctnWrnEnd << promptCmd;
-            std::cout.flush();
+            PrintMes("A client was suddenly disconnected", bndsNtfctnWrn);
             break;
         }
         else if(info != 0) {
-            std::cout << NtfctnMsgBgg << msg << NtfctnMsgEnd << promptCmd;
-            std::cout.flush();
+            PrintMes(msg, bndsNtfctnMsg);
         }
         msg = "Hello, Client!";
         if(cstm::sendStr(*p_fdSockClient, &msg) == -1) {
-            std::cout << NtfctnWrnBgg << "A client was suddenly disconnected" << NtfctnWrnEnd << promptCmd;
-            std::cout.flush();
+            PrintMes("A client was suddenly disconnected", bndsNtfctnWrn);
             break;
         }
     }
@@ -60,7 +62,9 @@ void AcceptClients(int *p_fdSockServer) {
         p_addrClient = new (std::nothrow) sockaddr_in;
         p_lenAddrClient = new (std::nothrow) socklen_t;
         if(p_fdSockClient == nullptr || p_addrClient == nullptr || p_lenAddrClient == nullptr) {
+            mtx.lock();
             std::cerr << "bad allocation" << std::endl;
+            mtx.unlock();
             delete p_fdSockClient;
             delete p_addrClient;
             delete p_lenAddrClient;
@@ -69,14 +73,18 @@ void AcceptClients(int *p_fdSockServer) {
         // accept client connecting
         *p_fdSockClient = accept(*p_fdSockServer, (struct sockaddr *) p_addrClient, p_lenAddrClient);
         if(*p_fdSockClient == -1) {
+            mtx.lock();
             std::cerr << "accept() failed" << std::endl;
+            mtx.unlock();
             delete p_fdSockClient;
             delete p_addrClient;
             delete p_lenAddrClient;
         }
 
         // create thread for further communication
+        mtx.lock();
         vctrThreads.emplace_back(std::thread(DealWithClient, p_fdSockClient, p_addrClient, p_lenAddrClient));
+        mtx.unlock();
     }
 }
 
@@ -116,13 +124,16 @@ int main(int argc, char **argv) {
         std::vector<std::string> vctrPartsStrInputCmd;
         do {
             vctrPartsStrInputCmd.clear();
+            mtx.lock();
             std::cout << promptCmd;
+            mtx.unlock();
             std::getline(std::cin, strInputCmd);
         } while(strInputCmd.length() == 0);
         std::stringstream strStreamInputCmd(strInputCmd);
         while(getline(strStreamInputCmd, partStrInputCmd, ' ')) {
             vctrPartsStrInputCmd.push_back(partStrInputCmd);
         }
+        mtx.lock();
         if(vctrPartsStrInputCmd.at(0) == "stop") {
             break;
         }
@@ -159,6 +170,7 @@ int main(int argc, char **argv) {
         else {
             std::cout << "  Wrong command!\n";
         }
+        mtx.unlock();
     }
 
     // stop wait for other threads

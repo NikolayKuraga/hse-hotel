@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#define VERSION   "2021.11.09"
+#define VERSION   "2021.11.14"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 
 #define PORT 5510
