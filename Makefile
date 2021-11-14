@@ -1,16 +1,13 @@
 CC=g++
 CFLAGS=-g -Wall -Wfatal-errors
 
-all: server.run client.run
+all: main.run
 
-shared.o: shared.cpp shared.hpp
-	$(CC) $(CFLAGS) -c shared.cpp -o shared.o
+client.o: client.cpp client.hpp
+	$(CC) $(CFLAGS) -c client.cpp `wx-config --cxxflags` -o client.o
 
-server.run: shared.o server.cpp server.hpp shared.hpp
-	$(CC) $(CFLAGS) server.cpp shared.o -o server.run
-
-client.run: shared.o client.cpp client.hpp shared.hpp
-	$(CC) $(CFLAGS) client.cpp shared.o `wx-config --cxxflags --libs` -o client.run
+main.run: main.cpp client.o
+	$(CC) $(CFLAGS) main.cpp client.o `wx-config --cxxflags --libs` -o main.run
 
 clean:
-	rm shared.o client.run server.run
+	rm client.o main.run
