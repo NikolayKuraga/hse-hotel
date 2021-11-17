@@ -3,11 +3,14 @@ CFLAGS=-g -Wall -Wfatal-errors
 
 all: main.run
 
-client.o: client.cpp client.hpp
-	$(CC) $(CFLAGS) -c client.cpp `wx-config --cxxflags` -o client.o
+dbi.o: dbi.hpp dbi.cpp
+	$(CC) $(CFLAGS) -c dbi.cpp -o dbi.o
 
-main.run: main.cpp client.o
-	$(CC) $(CFLAGS) main.cpp client.o `wx-config --cxxflags --libs` -o main.run
+gui.o: gui.hpp gui.cpp
+	$(CC) $(CFLAGS) -c gui.cpp `wx-config --cxxflags` -o gui.o
+
+main.run: dbi.o gui.o main.cpp
+	$(CC) $(CFLAGS) gui.o dbi.o main.cpp -lpqxx -lpq `wx-config --cxxflags --libs` -o main.run
 
 clean:
-	rm client.o main.run
+	rm gui.o dbi.o main.run

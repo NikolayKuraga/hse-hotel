@@ -1,7 +1,9 @@
-#include "client.hpp"
+#include "gui.hpp"
 
-bool AppClient::OnInit() {
-    FrameWelcome *frameWelcome = new FrameWelcome("HSE Hostel Client", wxDefaultPosition, wxDefaultSize);
-    frameWelcome -> Show(true);
+bool AppClient::OnInit()
+{
+    FrameMenu *frameMenu = new FrameMenu("HSE Hostel Client", wxDefaultPosition, wxDefaultSize);
+    frameMenu->Show(true);
+
     return true;
 }
