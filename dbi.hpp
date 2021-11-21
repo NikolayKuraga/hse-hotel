@@ -10,6 +10,8 @@
                            password = client    \
                            dbname   = client    "
 
-pqxx::result query(std::string strCnn = CONNECTION_STRING);
+bool queryCheckDB(std::string strCnn = CONNECTION_STRING);
+void queryCreateDB(std::string strCnn = CONNECTION_STRING);
+void queryDropDB(std::string strCnn = CONNECTION_STRING);
 
 #endif//DBI_HPP

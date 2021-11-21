@@ -10,11 +10,10 @@ Short list of terms:
     $ -- bash prompt
     # -- psql prompt
 
-Install some PostgreSQL (in Devuan 3 case):
+Install some PostgreSQL (in Devuan 3 case it is PostgreSQL 11):
     $ sudo apt install postgresql
 
-Login to psql as postgres (psql role) through postgres (linux user) (as a rule, it is the first
-  thing to do):
+Login to psql as postgres (psql role) through postgres (linux user):
     $ sudo -u postgres psql -U postgres
        |    | |         |    |
        |    | |         |    `--------------------------------.
@@ -26,7 +25,7 @@ Login to psql as postgres (psql role) through postgres (linux user) (as a rule, 
           execute next command as postgres (linux user)
           ```````                 ````````
 postgres is an administrator in psql, some kind of root
-It is absolutely normal to login as postgres (psql role) through postgres (linux user) with sudno --
+It is absolutely normal to login as postgres (psql role) through postgres (linux user) with sudo --
   it is save
 It is absolutely normal that postgres (both: psql role and linux user) doesn't have a password --
   there are reasons for that
@@ -41,9 +40,10 @@ To understand who are you in psql (print using-right-now role name):
 To understand where are you in psql (print name of current database):
     # SELECT current_database();
 
-By the way, there are users and roles in psql and it makes sense in previous versions of PostgreSQL,
-  but then these concepts were merged and now they are almost the same thing. So, in the future when
-  I talk about role or user in psql I will mean the same thing
+By the way, there are users and roles in psql and it makes sense in previous versions (do not know
+  exactly in which ones) of PostgreSQL, but then these concepts were merged and now they are almost
+  the same thing. So, in the future when I talk about role or user in psql I will mean the same
+  thing
 
 To list users (such as postgres):
     # \du
@@ -62,7 +62,7 @@ To create new database with certain owner (by the way, it seems having some "hom
   is nessesary for every psql user):
     # CREATE DATABASE databasename WITH OWNER = username;
 
-To connect to another database:
+To connect to another database using current user:
     # \c databasename
 
 To list tables in current database:
@@ -72,7 +72,7 @@ To remove database:
     # DROP DATABASE databasename;
 
 To remove user:
-    # DROP USER IF EXISTS username;
+    # DROP USER username;
 
 Actually, you cannot just remove some user -- any dependencies (databases owned by this user) must
   not exist
@@ -83,13 +83,13 @@ To find the port number. Default PostgreSQL port number is "5432". There are man
 
 To exit psql:
     # \q
-  or Ctrl+D hotkey
+  or Ctrl+D keyboard shortcut
 
 There are many important and interesting information like the port number in postgresql.conf file
   (in the same directory that pg_hba.conf (common, where is it?))
 
 To login to psql as some psql user from bash (it works without root and editing configuration files
-  and it is some kind of right way):
+  and it is some kind of the right way):
     $ psql -h hostname -p portnumber -U username -d databasename
                |               |
                |               |
@@ -99,7 +99,32 @@ To login to psql as some psql user from bash (it works without root and editing 
         "localhost"
 
 To login to psql as some psql user (simple way) (works on default port number, you will login to
-  some database owned by this this user):
+  some "default" database owned by this this user):
     $ psql -h hostname -U username
+
+To create extensions current user usually needs to have superuser priviliges. It is not always
+  OK to give some usual user these priviliges. Fortunately, extensions are installed on databases,
+  not users/roles, therefore if you need an extension on some database, connect to this one as
+  postgres or something and create needed extension.
+    # CREATE EXTENSION extensionnameorsmth;
+
+To list installed extensions
+    # \dx
+
+To create/drop (delete) stored procedures and functions read docs, manuals or smth.
+
+To list available for current user stored procedures and functions (by the way, SQL standard):
+    # SELECT specific_name, routine_definition
+        FROM information_schema.routines;
+
+To short the list (do not show pg_catalog procedures and functions, e.g. show "custom" ones):
+    # SELECT specific_name, routine_definition
+        FROM information_schema.routines
+       WHERE specific_schema <> 'pg_catalog';
+
+To check database existence this way might be used:
+    # SELECT 1
+        FROM pg_database
+       WHERE datname='namedb';
 
 Простор открыт -- и ничего святого now.

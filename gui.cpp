@@ -4,23 +4,29 @@ FrameMenu::FrameMenu(const wxString &title, const wxPoint &pos, const wxSize &si
 {
     SetIcon(wxIcon(PATH_ICON));
     // panels
-    wxPanel *panelTop = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    wxPanel *panelBottomLeft = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    wxPanel *panelBottomRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    panelTop = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    panelBottomLeft = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    panelBottomRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     // buttons
-    wxButton *buttonQuery = new wxButton(panelTop, ID_QUERY, "Query about things", wxDefaultPosition, wxDefaultSize);
-    wxButton *buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, "About", wxDefaultPosition, wxDefaultSize);
-    wxButton *buttonExit = new wxButton(panelBottomRight, wxID_EXIT, "Exit", wxDefaultPosition, wxDefaultSize);
-    Connect(ID_QUERY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnQuery));
+    buttonCheckDB = new wxButton(panelTop, ID_CHECK_DB, "Check database", wxDefaultPosition, wxDefaultSize);
+    buttonCreateDB = new wxButton(panelTop, ID_CREATE_DB, "Create database", wxDefaultPosition, wxDefaultSize);
+    buttonDropDB = new wxButton(panelTop, ID_DROP_DB, "Delete database", wxDefaultPosition, wxDefaultSize);
+    buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, "About", wxDefaultPosition, wxDefaultSize);
+    buttonExit = new wxButton(panelBottomRight, wxID_EXIT, "Exit", wxDefaultPosition, wxDefaultSize);
+    Connect(ID_CHECK_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnCheckDB));
+    Connect(ID_CREATE_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnCreateDB));
+    Connect(ID_DROP_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnDropDB));
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAbout));
     Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnExit));
     // sizers
-    wxBoxSizer *vSizerTop = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *vSizerBottomLeft = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *vSizerBottomRight = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *hSizerBottom = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer *vSizerMain = new wxBoxSizer(wxVERTICAL);
-    vSizerTop->Add(buttonQuery, 0, wxALIGN_CENTER | wxTOP, 10);
+    vSizerTop = new wxBoxSizer(wxVERTICAL);
+    vSizerBottomLeft = new wxBoxSizer(wxVERTICAL);
+    vSizerBottomRight = new wxBoxSizer(wxVERTICAL);
+    hSizerBottom = new wxBoxSizer(wxHORIZONTAL);
+    vSizerMain = new wxBoxSizer(wxVERTICAL);
+    vSizerTop->Add(buttonCheckDB, 0, wxALIGN_CENTER | wxTOP, 10);
+    vSizerTop->Add(buttonCreateDB, 0, wxALIGN_CENTER | wxTOP, 10);
+    vSizerTop->Add(buttonDropDB, 0, wxALIGN_CENTER | wxTOP, 10);
     vSizerBottomLeft->Add(buttonAbout, 0, wxALIGN_LEFT | wxALL, 10);
     vSizerBottomRight->Add(buttonExit, 0, wxALIGN_RIGHT | wxALL, 10);
     hSizerBottom->Add(panelBottomLeft, 1, wxEXPAND, 0);
@@ -32,24 +38,73 @@ FrameMenu::FrameMenu(const wxString &title, const wxPoint &pos, const wxSize &si
     panelTop->SetSizer(vSizerTop);
     SetSizer(vSizerMain);
     // final touches
+    if(queryCheckDB() == true) {
+        buttonCreateDB->Enable(false);
+    }
+    else {
+        buttonDropDB->Enable(false);
+    }
     SetMinSize(wxSize(220, 160));
-    buttonQuery->SetFocus();
     Centre();
 };
 
-void FrameMenu::OnQuery(wxCommandEvent &event)
+void FrameMenu::OnCheckDB(wxCommandEvent &event)
 {
     try {
-        pqxx::result r = query(CONNECTION_STRING);
-        for(pqxx::result::const_iterator i = r.begin(); i != r.end(); ++i) {
-            std::cout << i[0].as<int>() << ") "
-                      << i[1].as<std::string>() << " -- "
-                      << i[2].as<std::string>() << std::endl;
+        if(queryCheckDB() == true) {
+            buttonCreateDB->Enable(false);
+            buttonDropDB->Enable(true);
+            wxMessageBox("Database exists", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
         }
-        std::cout << std::endl;
+        else {
+            buttonCreateDB->Enable(true);
+            buttonDropDB->Enable(false);
+            wxMessageBox("Database does not exist", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
+        }
     }
     catch(const std::exception &e) {
-        wxMessageBox((std::string) "Connection error:\n" + e.what(), "Error", wxOK | wxCENTRE | wxICON_ERROR);
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void FrameMenu::OnCreateDB(wxCommandEvent &event)
+{
+    try {
+        if(queryCheckDB() == false) {
+            queryCreateDB();
+            if(queryCheckDB() == true) {
+                buttonCreateDB->Enable(false);
+                buttonDropDB->Enable(true);
+            }
+            wxMessageBox("Database has been created!", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
+        }
+        else {
+            wxMessageBox("Database has already been created!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+        }
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+
+}
+
+void FrameMenu::OnDropDB(wxCommandEvent &event)
+{
+    try {
+        if(queryCheckDB() == true) {
+            queryDropDB();
+            if(queryCheckDB() == false) {
+                buttonCreateDB->Enable(true);
+                buttonDropDB->Enable(false);
+            }
+            wxMessageBox("Database has been deleted!", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
+        }
+        else {
+            wxMessageBox("Database has already been deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+        }
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
@@ -60,7 +115,7 @@ void FrameMenu::OnAbout(wxCommandEvent &event)
 
 void FrameMenu::OnExit(wxCommandEvent &event)
 {
-    Close(true);
+    Destroy();
 }
 
 wxIMPLEMENT_APP(AppClient);
