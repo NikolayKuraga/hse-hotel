@@ -13,7 +13,7 @@ void queryCreateDB(std::string strCnn)
 {
     pqxx::connection cnn(strCnn);
     pqxx::work wrk(cnn);
-    wrk.exec("CALL create_db();");
+    wrk.exec("SELECT create_db();");
     wrk.commit();
 }
 
@@ -21,6 +21,6 @@ void queryDropDB(std::string strCnn)
 {
     pqxx::connection cnn(strCnn);
     pqxx::work wrk(cnn);
-    wrk.exec("CALL drop_db();");
+    wrk.exec("SELECT drop_db();");
     wrk.commit();
 }

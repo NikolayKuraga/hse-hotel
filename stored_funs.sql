@@ -1,4 +1,4 @@
-/* (stored) functions and procedures for PostgreSQL server */
+/* stored functions PostgreSQL server */
 
 -- check database 'clientdb' for existense
 CREATE OR REPLACE FUNCTION check_db() RETURNS BOOL AS $$
@@ -17,15 +17,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- create database 'clientdb'
-CREATE OR REPLACE PROCEDURE create_db() AS $$
+CREATE OR REPLACE FUNCTION create_db() RETURNS VOID AS $$
 BEGIN
      PERFORM dblink_exec('dbname=client port=5432 host=127.0.0.1 user=client password=client',
                          'CREATE DATABASE clientdb;');
 END;
 $$ LANGUAGE plpgsql;
 
--- drop procedure
-CREATE OR REPLACE PROCEDURE drop_db() AS $$
+-- drop database 'clientdb'
+CREATE OR REPLACE FUNCTION drop_db() RETURNS VOID AS $$
 BEGIN
      PERFORM dblink_exec('dbname=client port=5432 host=127.0.0.1 user=client password=client',
                          'DROP DATABASE clientdb;');

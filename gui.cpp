@@ -38,14 +38,20 @@ FrameMenu::FrameMenu(const wxString &title, const wxPoint &pos, const wxSize &si
     panelTop->SetSizer(vSizerTop);
     SetSizer(vSizerMain);
     // final touches
-    if(queryCheckDB() == true) {
-        buttonCreateDB->Enable(false);
-    }
-    else {
-        buttonDropDB->Enable(false);
-    }
     SetMinSize(wxSize(220, 160));
     Centre();
+    try {
+        if(queryCheckDB() == true) {
+            buttonCreateDB->Enable(false);
+        }
+        else {
+            buttonDropDB->Enable(false);
+        }
+    }
+    catch(const std::exception &e) {
+        buttonCreateDB->Enable(false);
+        buttonDropDB->Enable(false);
+    }
 };
 
 void FrameMenu::OnCheckDB(wxCommandEvent &event)
@@ -64,6 +70,8 @@ void FrameMenu::OnCheckDB(wxCommandEvent &event)
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        buttonCreateDB->Enable(false);
+        buttonDropDB->Enable(false);
     }
 }
 
@@ -84,6 +92,8 @@ void FrameMenu::OnCreateDB(wxCommandEvent &event)
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        buttonCreateDB->Enable(false);
+        buttonDropDB->Enable(false);
     }
 
 }
@@ -105,6 +115,8 @@ void FrameMenu::OnDropDB(wxCommandEvent &event)
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        buttonCreateDB->Enable(false);
+        buttonDropDB->Enable(false);
     }
 }
 

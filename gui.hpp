@@ -5,7 +5,7 @@
 #include <wx/wx.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.11.22"
+#define VERSION   "2021.11.23"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
