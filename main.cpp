@@ -2,8 +2,10 @@
 
 bool AppClient::OnInit()
 {
-    FrameMenu *frameMenu = new FrameMenu("HSE Hostel Client", wxDefaultPosition, wxDefaultSize);
+    FrameMenu *frameMenu = new FrameMenu();
     frameMenu->Show(true);
 
     return true;
 }
+
+wxIMPLEMENT_APP(AppClient);
