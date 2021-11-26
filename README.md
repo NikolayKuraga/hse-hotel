@@ -1,4 +1,3 @@
-# hse-hotel
 Another great thing from HSE's students
 
 So, what is this and how to?
