@@ -24,3 +24,13 @@ void queryDropDB(std::string strCnn)
     wrk.exec("SELECT drop_db();");
     wrk.commit();
 }
+
+void queryAddGuest(std::string strCnn, std::string last_name, std::string first_name, std::string patronymic,
+                   std::string passport_series, std::string passport_number, std::string phone)
+{
+    pqxx::connection cnn(strCnn);
+    pqxx::work wrk(cnn);
+    wrk.exec((std::string) "SELECT insert_guest(\'" + last_name + "\', \'" + first_name + "\', \'" + patronymic + "\', \'" +
+             passport_series + "\', \'" + passport_number + "\', \'" + phone + "\')");
+    wrk.commit();
+}
