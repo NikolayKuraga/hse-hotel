@@ -1,8 +1,8 @@
 #include "gui.hpp"
 
-DialogAddGuest::DialogAddGuest(wxWindow *parent) : wxDialog(parent, wxID_ANY, "Add guest", wxDefaultPosition, wxDefaultSize)
+DialogAddGuest::DialogAddGuest(wxWindow *parent, std::string dbName) : wxDialog(parent, wxID_ANY, "Add guest", wxDefaultPosition, wxDefaultSize), dbName(dbName)
 {
-    // text fields / texts / buttons in intuitive order on add-guest dialog
+    // text fields / texts / buttons
     textFieldLastName = new wxTextCtrl(this, wxID_ANY, "<last name>", wxDefaultPosition, wxDefaultSize);
     textFieldFirstName = new wxTextCtrl(this, wxID_ANY, "<first name>", wxDefaultPosition, wxDefaultSize);
     staticTextRowSndLeft = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
@@ -51,9 +51,13 @@ DialogAddGuest::DialogAddGuest(wxWindow *parent) : wxDialog(parent, wxID_ANY, "A
 void DialogAddGuest::OnAdd(wxCommandEvent &event)
 {
     try {
-        queryAddGuest(CNN_STR_CLIENTDB, textFieldLastName->GetValue().ToStdString(), textFieldFirstName->GetValue().ToStdString(),
-                      textFieldPatronymic->GetValue().ToStdString(), textFieldPassportSeries->GetValue().ToStdString(),
-                      textFieldPassportNumber->GetValue().ToStdString(), textFieldPhone->GetValue().ToStdString());
+        queryAddGuest(DF_CNN, dbName,
+                      textFieldLastName->GetValue().ToStdString(),
+                      textFieldFirstName->GetValue().ToStdString(),
+                      textFieldPatronymic->GetValue().ToStdString(),
+                      textFieldPassportSeries->GetValue().ToStdString(),
+                      textFieldPassportNumber->GetValue().ToStdString(),
+                      textFieldPhone->GetValue().ToStdString());
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
@@ -90,18 +94,20 @@ void FrameMenu::AssumeDBError()
 
 FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client", wxDefaultPosition, wxDefaultSize)
 {
-    // unimportant things
+    // little things
     modeTest = false;
     SetIcon(wxIcon(PATH_ICON));
     // panels
-    panelTopRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     panelTopLeft = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    panelTopRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     panelBottomLeft = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     panelBottomRight = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    // buttons
-    buttonCheckDB = new wxButton(panelTopLeft, ID_CHECK_DB, "Check database", wxDefaultPosition, wxDefaultSize);
-    buttonCreateDB = new wxButton(panelTopLeft, ID_CREATE_DB, "Create database", wxDefaultPosition, wxDefaultSize);
-    buttonDropDB = new wxButton(panelTopLeft, ID_DROP_DB, "Delete database", wxDefaultPosition, wxDefaultSize);
+    // text fields / texts / buttons
+    staticTextDBName = new wxStaticText(panelTopLeft, wxID_ANY, "name:", wxDefaultPosition, wxDefaultSize);
+    textFieldDBName = new wxTextCtrl(panelTopLeft, wxID_ANY, "clientdb", wxDefaultPosition, wxDefaultSize);
+    buttonCreateDB = new wxButton(panelTopLeft, ID_CREATE_DB, "Create", wxDefaultPosition, wxDefaultSize);
+    buttonDropDB = new wxButton(panelTopLeft, ID_DROP_DB, "Delete", wxDefaultPosition, wxDefaultSize);
+    buttonCheckDB = new wxButton(panelTopLeft, ID_CHECK_DB, "Check", wxDefaultPosition, wxDefaultSize);
     buttonModeTest = new wxButton(panelTopLeft, ID_MODE_TEST, "Test mode", wxDefaultPosition, wxDefaultSize);
     buttonAddGuest = new wxButton(panelTopRight, ID_ADD_GUEST, "Add guest", wxDefaultPosition, wxDefaultSize);
     buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, "About", wxDefaultPosition, wxDefaultSize);
@@ -114,6 +120,7 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client", wxDefaultPo
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAbout));
     Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnExit));
     // sizers
+    vSizerControlDB = new wxStaticBoxSizer(wxVERTICAL, panelTopLeft, "Database");
     vSizerTopLeft = new wxBoxSizer(wxVERTICAL);
     vSizerTopRight = new wxBoxSizer(wxVERTICAL);
     hSizerTop = new wxBoxSizer(wxHORIZONTAL);
@@ -121,10 +128,13 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client", wxDefaultPo
     vSizerBottomRight = new wxBoxSizer(wxVERTICAL);
     hSizerBottom = new wxBoxSizer(wxHORIZONTAL);
     vSizerMain = new wxBoxSizer(wxVERTICAL);
-    vSizerTopLeft->Add(buttonCreateDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
-    vSizerTopLeft->Add(buttonDropDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
-    vSizerTopLeft->AddSpacer(20);
-    vSizerTopLeft->Add(buttonCheckDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
+    vSizerControlDB->Add(staticTextDBName, 0, wxALIGN_LEFT | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlDB->Add(textFieldDBName, 0, wxALIGN_LEFT | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlDB->Add(buttonCheckDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlDB->AddSpacer(20);
+    vSizerControlDB->Add(buttonCreateDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlDB->Add(buttonDropDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT | wxBOTTOM, 5);
+    vSizerTopLeft->Add(vSizerControlDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
     vSizerTopLeft->AddSpacer(20);
     vSizerTopLeft->Add(buttonModeTest, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
     vSizerTopRight->Add(buttonAddGuest, 0, wxALIGN_CENTER | wxTOP, 5);
@@ -142,27 +152,18 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client", wxDefaultPo
     panelBottomRight->SetSizer(vSizerBottomRight);
     SetSizer(vSizerMain);
     // final touches
-    SetMinSize(wxSize(440, 320));
+    SetMinSize(wxSize(420, 400));
     Centre();
-    try {
-        if(queryCheckDB(CNN_STR_CLIENT) == true) {
-            AssumeDBCreated();
-        }
-        else {
-            AssumeDBDropped();
-        }
-    }
-    catch(const std::exception &e) {
-        AssumeDBError();
-    }
+    AssumeDBError();
+    buttonCheckDB->SetFocus();
 };
 
 void FrameMenu::OnCreateDB(wxCommandEvent &event)
 {
     try {
-        if(queryCheckDB(CNN_STR_CLIENT) == false) {
-            queryCreateDB(CNN_STR_CLIENT);
-            if(queryCheckDB(CNN_STR_CLIENT) == true) {
+        if(queryCheckDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString()) == false) {
+            queryCreateDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString());
+            if(queryCheckDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString()) == true) {
                 AssumeDBCreated();
             }
             wxMessageBox("Database has been created!", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
@@ -180,9 +181,9 @@ void FrameMenu::OnCreateDB(wxCommandEvent &event)
 void FrameMenu::OnDropDB(wxCommandEvent &event)
 {
     try {
-        if(queryCheckDB(CNN_STR_CLIENT) == true) {
-            queryDropDB(CNN_STR_CLIENT);
-            if(queryCheckDB(CNN_STR_CLIENT) == false) {
+        if(queryCheckDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString()) == true) {
+            queryDropDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString());
+            if(queryCheckDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString()) == false) {
                 AssumeDBDropped();
             }
             wxMessageBox("Database has been deleted!", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
@@ -200,7 +201,7 @@ void FrameMenu::OnDropDB(wxCommandEvent &event)
 void FrameMenu::OnCheckDB(wxCommandEvent &event)
 {
     try {
-        if(queryCheckDB(CNN_STR_CLIENT) == true) {
+        if(queryCheckDB(DF_CNN, DF_DB, textFieldDBName->GetValue().ToStdString()) == true) {
             AssumeDBCreated();
             wxMessageBox("Database exists", "Information", wxOK | wxCENTRE | wxICON_INFORMATION);
         }
@@ -234,7 +235,7 @@ void FrameMenu::OnModeTest(wxCommandEvent &event)
 
 void FrameMenu::OnAddGuest(wxCommandEvent &event)
 {
-    DialogAddGuest *dialogAddGuest = new DialogAddGuest(this);
+    DialogAddGuest *dialogAddGuest = new DialogAddGuest(this, textFieldDBName->GetValue().ToStdString());
     dialogAddGuest->ShowModal();
     dialogAddGuest->Destroy();
 }

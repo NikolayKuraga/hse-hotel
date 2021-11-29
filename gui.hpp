@@ -6,7 +6,7 @@
 #include <wx/wx.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.11.28"
+#define VERSION   "2021.11.29"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -24,9 +24,11 @@ enum
 class DialogAddGuest : public wxDialog
 {
 public:
-    DialogAddGuest(wxWindow *parent);
+    DialogAddGuest(wxWindow *parent, std::string dbName);
 
 private:
+    std::string dbName;
+
     wxTextCtrl *textFieldFirstName;
     wxTextCtrl *textFieldLastName;
     wxStaticText *staticTextRowSndLeft;
@@ -38,6 +40,7 @@ private:
     wxStaticText *staticTextRowFfhLeft;
     wxButton *buttonAdd;
     wxButton *buttonCancel;
+
     wxBoxSizer *hSizerRowFstLeft;
     wxBoxSizer *hSizerRowFstRight;
     wxBoxSizer *hSizerRowSndRight;
@@ -63,6 +66,9 @@ private:
     wxPanel *panelTopRight;
     wxPanel *panelBottomLeft;
     wxPanel *panelBottomRight;
+
+    wxStaticText *staticTextDBName;
+    wxTextCtrl *textFieldDBName;
     wxButton *buttonCreateDB;
     wxButton *buttonDropDB;
     wxButton *buttonCheckDB;
@@ -70,6 +76,8 @@ private:
     wxButton *buttonAddGuest;
     wxButton *buttonAbout;
     wxButton *buttonExit;
+
+    wxStaticBoxSizer *vSizerControlDB;
     wxBoxSizer *vSizerTopLeft;
     wxBoxSizer *vSizerTopRight;
     wxBoxSizer *hSizerTop;
