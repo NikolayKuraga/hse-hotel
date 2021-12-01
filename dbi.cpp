@@ -36,3 +36,12 @@ void queryAddGuest(std::string connection, std::string dbToConnect,
              passport_series + "\', \'" + passport_number + "\', \'" + phone + "\')");
     wrk.commit();
 }
+
+void queryDeleteGuest(std::string connection, std::string dbToConnect,
+                      std::string last_name, std::string first_name)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    wrk.exec((std::string) "SELECT delete_guest(\'" + last_name + "\', \'" + first_name + "\')");
+    wrk.commit();
+}

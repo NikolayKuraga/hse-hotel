@@ -18,7 +18,33 @@ enum
     ID_MODE_TEST = 104,
     ID_ADD_GUEST = 105,
     ID_ADD_GUEST_ADD = 106,
-    ID_ADD_GUEST_CANCEL = 107
+    ID_ADD_GUEST_CANCEL = 107,
+    ID_DELETE_GUEST = 108,
+    ID_DELETE_GUEST_DELETE = 109,
+    ID_DELETE_GUEST_CANCEL = 110
+};
+
+class DialogDeleteGuest : public wxDialog
+{
+public:
+    DialogDeleteGuest(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxTextCtrl *textFieldFirstName;
+    wxTextCtrl *textFieldLastName;
+    wxStaticText *staticTextRowSndLeft;
+    wxButton *buttonDelete;
+    wxButton *buttonCancel;
+
+    wxBoxSizer *hSizerRowFstLeft;
+    wxBoxSizer *hSizerRowFstRight;
+    wxBoxSizer *hSizerRowSndRight;
+    wxGridSizer *gSizerMain;
+
+    void OnDelete(wxCommandEvent &event);
+    void OnCancel(wxCommandEvent &event);
 };
 
 class DialogAddGuest : public wxDialog
@@ -74,6 +100,7 @@ private:
     wxButton *buttonCheckDB;
     wxButton *buttonModeTest;
     wxButton *buttonAddGuest;
+    wxButton *buttonDeleteGuest;
     wxButton *buttonAbout;
     wxButton *buttonExit;
 
@@ -95,6 +122,7 @@ private:
     void OnCheckDB(wxCommandEvent &event);
     void OnModeTest(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);
+    void OnDeleteGuest(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);
 };
