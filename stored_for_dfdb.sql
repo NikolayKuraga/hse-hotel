@@ -21,8 +21,9 @@ CREATE OR REPLACE FUNCTION create_db(dbname text) RETURNS VOID AS $create_db$
 BEGIN
     PERFORM dblink_exec('dbname=client port=5432 host=127.0.0.1 user=client password=client',
         'CREATE DATABASE ' || quote_ident(dbname));
-    
-    PERFORM dblink_exec('dbname=' || quote_ident(dbname) || ' port=5432 host=127.0.0.1 user=client password=client',
+    PERFORM dblink_connect('myconn', 'dbname=' || quote_ident(dbname) || ' port=5432 host=127.0.0.1 user=client password=client');
+    PERFORM dblink_exec('myconn','BEGIN');
+    PERFORM dblink_exec('myconn',
         'CREATE TABLE guest(
             guest_id serial PRIMARY KEY,
             last_name VARCHAR(30) NOT null,
@@ -38,9 +39,9 @@ BEGIN
             (passport_series, passport_number),
             phone VARCHAR(10)
             CONSTRAINT valid_guest_phone_number 
-            CHECK (phone ~ ''\d{10}''))
-
-         CREATE TABLE hotel_room(
+            CHECK (phone ~ ''\d{10}''))');
+    PERFORM dblink_exec('myconn',
+         'CREATE TABLE hotel_room(
             hotel_room_id INTEGER PRIMARY KEY,
             price_per_day NUMERIC(7, 2) NOT null
             CHECK (price_per_day > 0),
@@ -51,9 +52,9 @@ BEGIN
             service_class VARCHAR(8) DEFAULT ''standard''
             CONSTRAINT valid_service_class
             CHECK (service_class IN (''standard'', ''comfort'', ''luxury'')),
-            kitchen BOOL DEFAULT FALSE)
-
-         CREATE TABLE booking(
+            kitchen BOOL DEFAULT FALSE)');
+    PERFORM dblink_exec('myconn',
+         'CREATE TABLE booking(
             booking_id SERIAL PRIMARY KEY,
             arrival DATE NOT null,
             departure DATE NOT null
@@ -69,16 +70,16 @@ BEGIN
             total_cost NUMERIC(8, 2)
             CHECK (total_cost > 0),
             bank_card VARCHAR(19)
-            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13, 19}''))
-
-         CREATE TABLE booking_guest(
+            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13, 19}''))');
+    PERFORM dblink_exec('myconn',
+        'CREATE TABLE booking_guest(
         booking_id INTEGER REFERENCES booking
         ON DELETE CASCADE,
         guest_id INTEGER REFERENCES guest
         ON DELETE CASCADE,
-        PRIMARY KEY (booking_id, guest_id))
-
-        CREATE OR REPLACE FUNCTION is_room_available()
+        PRIMARY KEY (booking_id, guest_id))');
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION is_room_available()
             RETURNS trigger
                 LANGUAGE plpgsql
                 AS $is_room_available$
@@ -92,15 +93,15 @@ BEGIN
             END IF;
             RETURN NEW;
             END
-            $is_room_available$;
-
-         CREATE TRIGGER available_room_trigger
+            $is_room_available$;');
+    PERFORM dblink_exec('myconn',
+        'CREATE TRIGGER available_room_trigger
         BEFORE INSERT OR UPDATE OF arrival, departure, hotel_room_id
         ON booking
         FOR EACH ROW
-        EXECUTE PROCEDURE is_room_available();
-
-         CREATE OR REPLACE FUNCTION calc_cost()
+        EXECUTE PROCEDURE is_room_available()');
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION calc_cost()
         RETURNS trigger
         LANGUAGE plpgsql
         AS $calc_cost$
@@ -111,17 +112,17 @@ BEGIN
                             WHERE NEW.hotel_room_id = hotel_room.hotel_room_id);
         RETURN NEW;
         END
-        $calc_cost$;
-
-         CREATE TRIGGER cost_trigger
+        $calc_cost$');
+    PERFORM dblink_exec('myconn',
+        'CREATE TRIGGER cost_trigger
         BEFORE INSERT OR UPDATE OF arrival, departure, hotel_room_id
         ON booking
         FOR EACH ROW
-        EXECUTE PROCEDURE calc_cost();
-        
-         CREATE INDEX guest_name ON guest(last_name, first_name, patronimic);
-    
-         CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
+        EXECUTE PROCEDURE calc_cost()');
+    PERFORM dblink_exec('myconn',
+         'CREATE INDEX guest_name ON guest(last_name, first_name, patronimic)');
+    PERFORM dblink_exec('myconn',
+         'CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
             hotel_room_id INTEGER,
             price_per_day NUMERIC(7, 2),
             number_of_rooms INTEGER,
@@ -137,9 +138,9 @@ BEGIN
                 WHERE (arr::DATE, dep::DATE)
                 OVERLAPS (b.arrival, b.departure));
         END;
-        $find_free_rooms$ LANGUAGE plpgsql;
-        
-         CREATE OR REPLACE FUNCTION find_guest(
+        $find_free_rooms$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+         'CREATE OR REPLACE FUNCTION find_guest(
             lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS TABLE(
             last_name VARCHAR(30),
             first_name VARCHAR(20),
@@ -158,9 +159,9 @@ BEGIN
                 guest.last_name = lst_name AND
                 guest.first_name = frst_name;
         END;
-        $find_guest$ LANGUAGE plpgsql;
-        
-         CREATE OR REPLACE FUNCTION delete_guest(
+        $find_guest$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_guest(
             lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS VOID AS
         $delete_guest$
         BEGIN
@@ -168,9 +169,9 @@ BEGIN
             WHERE guest.last_name = lst_name AND
             guest.first_name = frst_name;
         END;
-        $delete_guest$ LANGUAGE plpgsql;
-
-        CREATE FUNCTION insert_guest(v_last_name VARCHAR(30),
+        $delete_guest$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+        'CREATE FUNCTION insert_guest(v_last_name VARCHAR(30),
                                      v_first_name VARCHAR(20),
                                      v_patronimic VARCHAR(20),
                                      v_passport_series VARCHAR(4),
@@ -181,7 +182,7 @@ BEGIN
              VALUES (v_last_name, v_first_name, v_patronimic, v_passport_series, v_passport_number, v_phone);
         END;
         $insert_guest$ LANGUAGE plpgsql;');
-        
+    PERFORM dblink_exec('myconn','COMMIT');
 END;
 $create_db$ LANGUAGE plpgsql;
 
