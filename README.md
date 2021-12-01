@@ -94,8 +94,9 @@ To login to psql as some psql user from bash (it works without root and editing 
                |               |
        name of host,     the port number,
       if one computer   PostgreSQL default is
-        is used type           5432
-        "localhost"
+        is used than        5432
+           type
+        localhost
 
 To login to psql as some psql user (simple way) (works on default port number, you will login to
   some "default" database owned by this this user):
@@ -125,5 +126,8 @@ To check database existence this way might be used:
     # SELECT 1
         FROM pg_database
        WHERE datname='namedb';
+
+To import some sql-file to some database:
+    $ psql -h hostname -p portnumber -U username -d databasename -f /path/to/file
 
 Простор открыт -- и ничего святого now.
