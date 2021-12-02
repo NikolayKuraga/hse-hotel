@@ -181,7 +181,128 @@ BEGIN
              INSERT INTO guest(last_name, first_name, patronimic, passport_series, passport_number, phone)
              VALUES (v_last_name, v_first_name, v_patronimic, v_passport_series, v_passport_number, v_phone);
         END;
-        $insert_guest$ LANGUAGE plpgsql;');
+        $insert_guest$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+        'CREATE FUNCTION insert_hotel_room(
+            v_hotel_room_id INTEGER,
+            v_price_per_day NUMERIC(7, 2),
+            v_number_of_rooms INTEGER,
+            v_area INTEGER,
+            v_service_class VARCHAR(8),
+            v_kitchen BOOL) RETURNS VOID AS $insert_hotel_room$
+        BEGIN
+            INSERT INTO hotel_room(hotel_room_id, price_per_day, number_of_rooms, area, service_class, kitchen)
+            VALUES (v_hotel_room_id, v_price_per_day, v_number_of_rooms, v_area, v_service_class, v_kitchen);
+        END;
+        $insert_hotel_room$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+        'CREATE FUNCTION insert_booking(
+            v_booking_id INTEGER,
+            v_arrival DATE,
+            v_departure DATE,
+            v_booking_date DATE,
+            v_hotel_room_id INTEGER,
+            v_total_cost NUMERIC(8, 2),
+            v_bank_card VARCHAR(19)) RETURNS VOID AS $insert_booking$
+        BEGIN
+            INSERT INTO booking(booking_id, arrival, departure, booking_date, hotel_room_id, total_cost, bank_card)
+            VALUES (v_booking_id, v_arrival, v_departure, v_booking_date, v_hotel_room_id, v_total_cost, v_bank_card);
+        END;
+        $insert_booking$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn',
+        'CREATE FUNCTION insert_booking_guest(
+            v_booking_id INTEGER,
+            v_guest_id INTEGER) RETURNS VOID AS $insert_booking_guest$
+        BEGIN
+            INSERT INTO booking_guest(booking_id, guest_id)
+            VALUES (v_booking_id, v_guest_id);
+        END;
+        $insert_booking_guest$ LANGUAGE plpgsql');
+    PERFORM dblink_exec('myconn', 
+        'CREATE OR REPLACE FUNCTION print_table_guest() RETURNS TABLE(
+            guest_id INTEGER,
+            last_name VARCHAR(30),
+            first_name VARCHAR(20),
+            patronimic VARCHAR(20),
+            passport_series VARCHAR(4),
+            passport_number VARCHAR(6),
+            phone VARCHAR(10))
+        AS
+        $print_table_guest$
+        BEGIN
+            RETURN QUERY SELECT * FROM guest;
+        END;
+        $print_table_guest$ LANGUAGE plpgsql;');
+        
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
+            hotel_room_id INTEGER,
+            price_per_day NUMERIC(7, 2),
+            number_of_rooms INTEGER,
+            area INTEGER,
+            service_class VARCHAR(8),
+            kitchen BOOL)
+        AS
+        $print_table_hotel_room$
+        BEGIN
+            RETURN QUERY SELECT * FROM hotel_room;
+        END;
+        $print_table_hotel_room$ LANGUAGE plpgsql;');
+        
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
+            hotel_room_id INTEGER,
+            price_per_day NUMERIC(7, 2),
+            number_of_rooms INTEGER,
+            area INTEGER,
+            service_class VARCHAR(8),
+            kitchen BOOL)
+        AS
+        $print_table_hotel_room$
+        BEGIN
+            RETURN QUERY SELECT * FROM hotel_room;
+        END;
+        $print_table_hotel_room$ LANGUAGE plpgsql;');
+        
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION print_table_booking() RETURNS TABLE(
+            booking_id INTEGER,
+            arrival DATE,
+            departure DATE,
+            booking_date DATE,
+            hotel_room_id INTEGER,
+            total_cost NUMERIC(8, 2),
+            bank_card VARCHAR(19))
+        AS
+        $print_table_booking$
+        BEGIN
+            RETURN QUERY SELECT * FROM booking;
+        END;
+        $print_table_booking$ LANGUAGE plpgsql;');
+        
+    PERFORM dblink_exec('myconn', 
+        'CREATE OR REPLACE FUNCTION print_table_booking_guest() RETURNS TABLE(
+            booking_id INTEGER,
+            guest_id INTEGER)
+        AS
+        $print_table_booking_guest$
+        BEGIN
+            RETURN QUERY SELECT * FROM booking_guest;
+        END;
+        $print_table_booking_guest$ LANGUAGE plpgsql;');
+
+    /* function print_table() should be called like
+    SELECT * FROM print_table(NULL::guest);
+    SELECT * FROM print_table(NULL::hotel_room);*/
+    PERFORM dblink_exec('myconn', 
+        'CREATE OR REPLACE FUNCTION print_table(_tbl anyelement)
+          RETURNS SETOF anyelement AS
+        $func$
+        BEGIN
+        RETURN QUERY EXECUTE ''SELECT * FROM '' || pg_typeof(_tbl);
+        END
+        $func$  LANGUAGE plpgsql;');
+
     PERFORM dblink_exec('myconn','COMMIT');
 END;
 $create_db$ LANGUAGE plpgsql;

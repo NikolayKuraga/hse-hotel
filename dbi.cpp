@@ -37,6 +37,22 @@ void queryAddGuest(std::string connection, std::string dbToConnect,
     wrk.commit();
 }
 
+std::string queryPrintGuests(std::string connection, std::string dbToConnect)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "SELECT * FROM print_table(NULL::guest);");
+    wrk.commit();
+    std::string strOut;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+            strOut = strOut + it[column].c_str() + ' ';
+        }
+        strOut = strOut + '\n';
+    }
+    return (std::string) strOut;
+}
+
 void queryDeleteGuest(std::string connection, std::string dbToConnect,
                       std::string last_name, std::string first_name)
 {

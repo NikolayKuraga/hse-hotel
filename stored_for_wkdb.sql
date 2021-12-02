@@ -157,3 +157,82 @@ BEGIN
      VALUES (v_last_name, v_first_name, v_patronimic, v_passport_series, v_passport_number, v_phone);
 END;
 $insert_guest$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION print_table_guest() RETURNS TABLE(
+    guest_id INTEGER,
+    last_name VARCHAR(30),
+    first_name VARCHAR(20),
+    patronimic VARCHAR(20),
+    passport_series VARCHAR(4),
+    passport_number VARCHAR(6),
+    phone VARCHAR(10))
+    AS
+    $print_table_guest$
+    BEGIN
+        RETURN QUERY SELECT * FROM guest;
+    END;
+    $print_table_guest$ LANGUAGE plpgsql;
+        
+CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
+    hotel_room_id INTEGER,
+    price_per_day NUMERIC(7, 2),
+    number_of_rooms INTEGER,
+    area INTEGER,
+    service_class VARCHAR(8),
+    kitchen BOOL)
+    AS
+    $print_table_hotel_room$
+    BEGIN
+        RETURN QUERY SELECT * FROM hotel_room;
+    END;
+    $print_table_hotel_room$ LANGUAGE plpgsql;
+        
+CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
+    hotel_room_id INTEGER,
+    price_per_day NUMERIC(7, 2),
+    number_of_rooms INTEGER,
+    area INTEGER,
+    service_class VARCHAR(8),
+    kitchen BOOL)
+    AS
+    $print_table_hotel_room$
+    BEGIN
+        RETURN QUERY SELECT * FROM hotel_room;
+    END;
+    $print_table_hotel_room$ LANGUAGE plpgsql;
+        
+CREATE OR REPLACE FUNCTION print_table_booking() RETURNS TABLE(
+    booking_id INTEGER,
+    arrival DATE,
+    departure DATE,
+    booking_date DATE,
+    hotel_room_id INTEGER,
+    total_cost NUMERIC(8, 2),
+    bank_card VARCHAR(19))
+    AS
+    $print_table_booking$
+    BEGIN
+        RETURN QUERY SELECT * FROM booking;
+    END;
+    $print_table_booking$ LANGUAGE plpgsql;
+        
+CREATE OR REPLACE FUNCTION print_table_booking_guest() RETURNS TABLE(
+    booking_id INTEGER,
+    guest_id INTEGER)
+    AS
+    $print_table_booking_guest$
+    BEGIN
+        RETURN QUERY SELECT * FROM booking_guest;
+    END;
+    $print_table_booking_guest$ LANGUAGE plpgsql;
+
+/* function print_table() should be called like
+SELECT * FROM print_table(NULL::guest);
+SELECT * FROM print_table(NULL::hotel_room);*/
+CREATE OR REPLACE FUNCTION print_table(_tbl anyelement)
+    RETURNS SETOF anyelement AS
+    $func$
+    BEGIN
+    RETURN QUERY EXECUTE 'SELECT * FROM ' || pg_typeof(_tbl);
+    END
+    $func$  LANGUAGE plpgsql;

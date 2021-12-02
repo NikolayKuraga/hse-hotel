@@ -10,7 +10,7 @@ gui.o: gui.hpp gui.cpp
 	$(CC) $(CFLAGS) -c gui.cpp `wx-config --cxxflags` -o gui.o
 
 main.run: dbi.o gui.o main.cpp
-	$(CC) $(CFLAGS) gui.o dbi.o main.cpp -lpqxx -lpq `wx-config --cxxflags --libs` -o main.run
+	$(CC) $(CFLAGS) gui.o dbi.o main.cpp -lpqxx -lpq `wx-config --cxxflags --libs std, richtext` -o main.run
 
 clean:
 	rm gui.o dbi.o main.run
