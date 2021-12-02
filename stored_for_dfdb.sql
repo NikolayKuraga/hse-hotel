@@ -161,16 +161,6 @@ BEGIN
         END;
         $find_guest$ LANGUAGE plpgsql');
     PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION delete_guest(
-            lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS VOID AS
-        $delete_guest$
-        BEGIN
-            DELETE FROM guest
-            WHERE guest.last_name = lst_name AND
-            guest.first_name = frst_name;
-        END;
-        $delete_guest$ LANGUAGE plpgsql');
-    PERFORM dblink_exec('myconn',
         'CREATE FUNCTION insert_guest(v_last_name VARCHAR(30),
                                      v_first_name VARCHAR(20),
                                      v_patronimic VARCHAR(20),
@@ -296,13 +286,85 @@ BEGIN
     SELECT * FROM print_table(NULL::hotel_room);*/
     PERFORM dblink_exec('myconn', 
         'CREATE OR REPLACE FUNCTION print_table(_tbl anyelement)
-          RETURNS SETOF anyelement AS
-        $func$
+        RETURNS SETOF anyelement AS
+        $print_table$
         BEGIN
-        RETURN QUERY EXECUTE ''SELECT * FROM '' || pg_typeof(_tbl);
-        END
-        $func$  LANGUAGE plpgsql;');
+            RETURN QUERY EXECUTE ''SELECT * FROM '' || pg_typeof(_tbl);
+        END;
+        $print_table$ LANGUAGE plpgsql;');
 
+    /* function delete_row() returns TRUE, if deletion was successfull
+    Otherwise it returns NULL.
+    Example of how it should be called:
+    SELECT delete_row('guest', 'guest_id', 1);*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_row(_tbl regclass, key_col TEXT, key_val INTEGER, OUT success BOOL)
+        RETURNS BOOL AS
+        $delete_row$
+        BEGIN
+            EXECUTE format(''
+               DELETE FROM %s
+               WHERE %I = $1
+               RETURNING TRUE'', _tbl, key_col)
+            USING key_val
+            INTO success;
+        END;
+        $delete_row$ LANGUAGE plpgsql;');
+
+    /* function delete_guest_by_name() returns TRUE, if deletion was successfull
+    Otherwise it returns NULL.
+    Example of how it should be called:
+    SELECT delete_guest_by_name('Ivanov', 'Ivan');*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_guest_by_name(
+        lst_name VARCHAR(30), frst_name VARCHAR(20), OUT success BOOL)
+        RETURNS BOOL AS
+        $delete_guest_by_name$
+        BEGIN
+            DELETE FROM guest
+            WHERE guest.last_name = lst_name AND
+            guest.first_name = frst_name
+            RETURNING TRUE
+            INTO success;
+        END;
+        $delete_guest_by_name$ LANGUAGE plpgsql;');
+
+    /* function delete_guest_by_passport() returns TRUE, if deletion was successfull
+    Otherwise it returns NULL.
+    Example of how it should be called:
+    SELECT delete_guest_by_passport('1111', '1111111');*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_guest_by_passport(
+        v_passport_series VARCHAR(4), v_passport_number VARCHAR(6), OUT success BOOL)
+        RETURNS BOOL AS
+        $delete_guest_by_passport$
+        BEGIN
+            DELETE FROM guest
+            WHERE guest.passport_series = v_passport_series AND
+            guest.passport_number = v_passport_number
+            RETURNING TRUE
+            INTO success;
+        END;
+        $delete_guest_by_passport$ LANGUAGE plpgsql;');
+
+    /* function delete_booking_by_dates_and_room() returns TRUE, if deletion was successfull
+    Otherwise it returns NULL.
+    Example of how it should be called:
+    SELECT delete_row('2021-12-27', '2021-12-29', 1);*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_booking_by_dates_and_room(
+        v_arrival DATE, v_departure DATE, v_hotel_room_id INTEGER, OUT success BOOL)
+        RETURNS BOOL AS
+        $delete_booking_by_dates_and_room$
+        BEGIN
+            DELETE FROM booking
+            WHERE booking.arrival = v_arrival AND
+            booking.departure = v_departure AND
+            booking.hotel_room_id = v_hotel_room_id
+            RETURNING TRUE
+            INTO success;
+        END;
+        $delete_booking_by_dates_and_room$ LANGUAGE plpgsql;');
     PERFORM dblink_exec('myconn','COMMIT');
 END;
 $create_db$ LANGUAGE plpgsql;
