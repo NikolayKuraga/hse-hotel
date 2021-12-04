@@ -16,10 +16,11 @@ bool queryCheckDB(std::string connection, std::string dbToConnect, std::string d
 void queryCreateDB(std::string connection, std::string dbToConnect, std::string dbToCreate);
 void queryDropDB(std::string connection, std::string dbToConnect, std::string dbToDrop);
 void queryAddGuest(std::string connection, std::string dbToConnect,
-                   std::string last_name, std::string first_name, std::string patronimic,
+                   std::string lst_name, std::string fst_name, std::string patronimic,
                    std::string passport_series, std::string passport_number, std::string phone);
-std::string queryPrintGuests(std::string connection, std::string dbToConnect);
+std::vector<std::vector<std::string>> queryPrintGuests(std::string connection, std::string dbToConnect);
+//std::vector<std::vector<std::string>> queryPrintGuests_(std::string connection, std::string dbToConnect);
 void queryDeleteGuest(std::string connection, std::string dbToConnect,
-                      std::string last_name, std::string first_name);
+                      std::string lst_name, std::string fst_name);
 
 #endif//DBI_HPP

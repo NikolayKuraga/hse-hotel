@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.02"
+#define VERSION   "2021.12.04"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -20,26 +20,13 @@ enum
     ID_ADD_GUEST = 105,
     ID_ADD_GUEST_ADD = 106,
     ID_ADD_GUEST_CANCEL = 107,
-    ID_PRINT_GUESTS = 108,
-    ID_PRINT_GUESTS_OK = 109,
-    ID_DELETE_GUEST = 110,
-    ID_DELETE_GUEST_DELETE = 111,
-    ID_DELETE_GUEST_CANCEL = 112
-};
-
-class DialogPrintGuests : public wxDialog
-{
-public:
-    DialogPrintGuests(wxWindow *parent, std::string dbName);
-
-private:
-    wxPanel *panelBottom;
-    wxRichTextCtrl *guestList;
-    wxButton *buttonOK;
-
-    wxBoxSizer *vSizerBottom;
-    wxBoxSizer *vSizerMain;
-    void OnOK(wxCommandEvent &event);
+    ID_VIEW_GUESTS = 108,
+    ID_VIEW_GUESTS_FIND = 109,
+    ID_VIEW_GUESTS_PRINT_ALL = 110,
+    ID_VIEW_GUESTS_CLOSE = 111,
+    ID_DELETE_GUEST = 112,
+    ID_DELETE_GUEST_DELETE = 113,
+    ID_DELETE_GUEST_CANCEL = 114
 };
 
 class DialogAddGuest : public wxDialog
@@ -72,6 +59,29 @@ private:
     wxGridSizer *gSizerMain;
 
     void OnAdd(wxCommandEvent &event);
+    void OnCancel(wxCommandEvent &event);
+};
+
+class DialogViewGuests : public wxDialog
+{
+public:
+    DialogViewGuests(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *guestLst;
+    wxTextCtrl *txtFldLstName;
+    wxTextCtrl *txtFldFstName;
+    wxButton *btnFind;
+    wxButton *btnPrintAll;
+    wxButton *btnCancel;
+
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnFind(wxCommandEvent &event);
+    void OnPrintAll(wxCommandEvent &event);
     void OnCancel(wxCommandEvent &event);
 };
 
@@ -117,7 +127,7 @@ private:
     wxButton *buttonCheckDB;
     wxButton *buttonModeTest;
     wxButton *buttonAddGuest;
-    wxButton *buttonPrintGuests;
+    wxButton *buttonViewGuests;
     wxButton *buttonDeleteGuest;
     wxButton *buttonAbout;
     wxButton *buttonExit;
@@ -140,7 +150,8 @@ private:
     void OnCheckDB(wxCommandEvent &event);
     void OnModeTest(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);
-    void OnPrintGuests(wxCommandEvent &event);
+    void OnFindGuests(wxCommandEvent &event);
+    void OnViewGuests(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);

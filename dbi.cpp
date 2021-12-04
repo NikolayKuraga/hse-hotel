@@ -36,12 +36,12 @@ void queryAddGuest(std::string connection, std::string dbToConnect,
              passport_series + "\', \'" + passport_number + "\', \'" + phone + "\')");
     wrk.commit();
 }
-
+/*
 std::string queryPrintGuests(std::string connection, std::string dbToConnect)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-    pqxx::result r = wrk.exec((std::string) "SELECT * FROM print_table(NULL::guest);");
+    pqxx::result r = wrk.exec("SELECT * FROM print_table(NULL::guest);");
     wrk.commit();
     std::string strOut;
     for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
@@ -50,7 +50,24 @@ std::string queryPrintGuests(std::string connection, std::string dbToConnect)
         }
         strOut = strOut + '\n';
     }
-    return (std::string) strOut;
+    return strOut;
+}*/
+
+std::vector<std::vector<std::string>> queryPrintGuests(std::string connection, std::string dbToConnect)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec("SELECT * FROM print_table(NULL::guest);");
+    wrk.commit();
+    std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
+        std::vector<std::string> row;
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+            row.push_back(it[column].c_str());
+        }
+        tbl.push_back(row);
+    }
+    return tbl;
 }
 
 void queryDeleteGuest(std::string connection, std::string dbToConnect,
