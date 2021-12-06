@@ -38,7 +38,7 @@ CREATE TABLE booking(
     CONSTRAINT valid_booking_date
     CHECK(booking_date <= arrival),
     hotel_room_id INTEGER REFERENCES hotel_room
-    ON DELETE CASCADE
+    ON DELETE SET NULL
     ON UPDATE CASCADE,
     CONSTRAINT valid_booking UNIQUE (arrival, departure, hotel_room_id),
     total_cost NUMERIC(8, 2)
@@ -48,9 +48,11 @@ CREATE TABLE booking(
 
 CREATE TABLE booking_guest(
     booking_id INTEGER REFERENCES booking
-    ON DELETE CASCADE,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
     guest_id INTEGER REFERENCES guest
-    ON DELETE CASCADE,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
     PRIMARY KEY (booking_id, guest_id));
 
 CREATE OR REPLACE FUNCTION is_room_available()
@@ -134,18 +136,8 @@ CREATE OR REPLACE FUNCTION find_guest(
             guest.first_name = frst_name;
     END;
     $find_guest$ LANGUAGE plpgsql;
-        
-CREATE OR REPLACE FUNCTION delete_guest(
-    lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS VOID AS
-    $delete_guest$
-    BEGIN
-        DELETE FROM guest
-        WHERE guest.last_name = lst_name AND
-        guest.first_name = frst_name;
-    END;
-    $delete_guest$ LANGUAGE plpgsql;
 
--- create stored function for inserting guests
+-- create a stored function to insert rows into the table 'guest'
 CREATE FUNCTION insert_guest(v_last_name VARCHAR(30),
                              v_first_name VARCHAR(20),
                              v_patronimic VARCHAR(20),
@@ -158,81 +150,193 @@ BEGIN
 END;
 $insert_guest$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION print_table_guest() RETURNS TABLE(
-    guest_id INTEGER,
-    last_name VARCHAR(30),
-    first_name VARCHAR(20),
-    patronimic VARCHAR(20),
-    passport_series VARCHAR(4),
-    passport_number VARCHAR(6),
-    phone VARCHAR(10))
-    AS
-    $print_table_guest$
-    BEGIN
-        RETURN QUERY SELECT * FROM guest;
-    END;
-    $print_table_guest$ LANGUAGE plpgsql;
-        
-CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
-    hotel_room_id INTEGER,
-    price_per_day NUMERIC(7, 2),
-    number_of_rooms INTEGER,
-    area INTEGER,
-    service_class VARCHAR(8),
-    kitchen BOOL)
-    AS
-    $print_table_hotel_room$
-    BEGIN
-        RETURN QUERY SELECT * FROM hotel_room;
-    END;
-    $print_table_hotel_room$ LANGUAGE plpgsql;
-        
-CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
-    hotel_room_id INTEGER,
-    price_per_day NUMERIC(7, 2),
-    number_of_rooms INTEGER,
-    area INTEGER,
-    service_class VARCHAR(8),
-    kitchen BOOL)
-    AS
-    $print_table_hotel_room$
-    BEGIN
-        RETURN QUERY SELECT * FROM hotel_room;
-    END;
-    $print_table_hotel_room$ LANGUAGE plpgsql;
-        
-CREATE OR REPLACE FUNCTION print_table_booking() RETURNS TABLE(
-    booking_id INTEGER,
-    arrival DATE,
-    departure DATE,
-    booking_date DATE,
-    hotel_room_id INTEGER,
-    total_cost NUMERIC(8, 2),
-    bank_card VARCHAR(19))
-    AS
-    $print_table_booking$
-    BEGIN
-        RETURN QUERY SELECT * FROM booking;
-    END;
-    $print_table_booking$ LANGUAGE plpgsql;
-        
-CREATE OR REPLACE FUNCTION print_table_booking_guest() RETURNS TABLE(
-    booking_id INTEGER,
-    guest_id INTEGER)
-    AS
-    $print_table_booking_guest$
-    BEGIN
-        RETURN QUERY SELECT * FROM booking_guest;
-    END;
-    $print_table_booking_guest$ LANGUAGE plpgsql;
+-- create a stored function to insert rows into the table 'hotel_room'
+CREATE FUNCTION insert_hotel_room(
+    v_hotel_room_id INTEGER,
+    v_price_per_day NUMERIC(7, 2),
+    v_number_of_rooms INTEGER,
+    v_area INTEGER,
+    v_service_class VARCHAR(8),
+    v_kitchen BOOL) RETURNS VOID AS $insert_hotel_room$
+BEGIN
+    INSERT INTO hotel_room(hotel_room_id, price_per_day, number_of_rooms, area, service_class, kitchen)
+    VALUES (v_hotel_room_id, v_price_per_day, v_number_of_rooms, v_area, v_service_class, v_kitchen);
+END;
+$insert_hotel_room$ LANGUAGE plpgsql;
 
-/* function print_table() should be called like
+-- create a stored function to insert rows into the table 'booking'
+CREATE FUNCTION insert_booking(
+    v_booking_id INTEGER,
+    v_arrival DATE,
+    v_departure DATE,
+    v_booking_date DATE,
+    v_hotel_room_id INTEGER,
+    v_total_cost NUMERIC(8, 2),
+    v_bank_card VARCHAR(19)) RETURNS VOID AS $insert_booking$
+BEGIN
+    INSERT INTO booking(booking_id, arrival, departure, booking_date, hotel_room_id, total_cost, bank_card)
+    VALUES (v_booking_id, v_arrival, v_departure, v_booking_date, v_hotel_room_id, v_total_cost, v_bank_card);
+END;
+$insert_booking$ LANGUAGE plpgsql;
+
+-- create a stored function to insert rows into the table 'booking_guest'
+CREATE FUNCTION insert_booking_guest(
+    v_booking_id INTEGER,
+    v_guest_id INTEGER) RETURNS VOID AS $insert_booking_guest$
+BEGIN
+    INSERT INTO booking_guest(booking_id, guest_id)
+    VALUES (v_booking_id, v_guest_id);
+END;
+$insert_booking_guest$ LANGUAGE plpgsql;
+
+/* The function print_table() should be called like
 SELECT * FROM print_table(NULL::guest);
 SELECT * FROM print_table(NULL::hotel_room);*/
 CREATE OR REPLACE FUNCTION print_table(_tbl anyelement)
     RETURNS SETOF anyelement AS
-    $func$
+    $print_table$
     BEGIN
     RETURN QUERY EXECUTE 'SELECT * FROM ' || pg_typeof(_tbl);
     END
-    $func$  LANGUAGE plpgsql;
+    $print_table$ LANGUAGE plpgsql;
+
+/* The function delete_row() returns TRUE, if the deletion was successfull
+Otherwise it returns FALSE.
+Example of how it should be called:
+SELECT delete_row('guest', 'guest_id', 1);*/
+CREATE OR REPLACE FUNCTION delete_row(_tbl regclass, key_col text, key_val INTEGER)
+    RETURNS BOOL AS
+    $delete_row$
+    DECLARE 
+    success BOOL;
+    BEGIN
+        EXECUTE format('
+            DELETE FROM %s
+            WHERE %I = $1
+            RETURNING TRUE', _tbl, key_col)
+        USING key_val
+        INTO success;
+        IF success IS TRUE
+        THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END;
+    $delete_row$ LANGUAGE plpgsql;
+
+/* The function delete_guest_by_name() returns TRUE, if the deletion was successfull.
+Otherwise it returns FALSE.
+Example of how it should be called:
+SELECT delete_guest_by_name('Ivanov', 'Ivan');*/
+CREATE OR REPLACE FUNCTION delete_guest_by_name(
+    lst_name VARCHAR(30), frst_name VARCHAR(20))
+    RETURNS BOOL AS
+    $delete_guest_by_name$
+    DECLARE
+    success BOOL;
+    BEGIN
+        EXECUTE format('DELETE FROM guest
+            WHERE guest.last_name = $1 AND
+            guest.first_name = $2
+            RETURNING TRUE')
+        USING lst_name, frst_name
+        INTO success;
+        IF success IS TRUE
+        THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END;
+    $delete_guest_by_name$ LANGUAGE plpgsql;
+
+/* The function delete_guest_by_passport() returns TRUE, if the deletion was successfull.
+Otherwise it returns FALSE.
+Example of how it should be called:
+SELECT delete_guest_by_passport('1111', '1111111');*/
+CREATE OR REPLACE FUNCTION delete_guest_by_passport(
+    v_passport_series VARCHAR(4), v_passport_number VARCHAR(6))
+    RETURNS BOOL AS
+    $delete_guest_by_passport$
+    DECLARE
+    success BOOL;
+    BEGIN
+        EXECUTE format('DELETE FROM guest
+            WHERE guest.passport_series = $1 AND
+            guest.passport_number = $2
+            RETURNING TRUE')
+        USING v_passport_series, v_passport_number
+        INTO success;
+        IF success IS TRUE
+        THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END;
+    $delete_guest_by_passport$ LANGUAGE plpgsql;
+
+/* The function delete_booking_by_dates_and_room() returns TRUE, if the deletion was successfull.
+Otherwise it returns FALSE.
+Example of how it should be called:
+SELECT delete_row('2021-12-27', '2021-12-29', 1);*/
+CREATE OR REPLACE FUNCTION delete_booking_by_dates_and_room(
+    v_arrival DATE, v_departure DATE, v_hotel_room_id INTEGER)
+    RETURNS BOOL AS
+    $delete_booking_by_dates_and_room$
+    DECLARE
+    success BOOL;
+    BEGIN
+        EXECUTE format('DELETE FROM booking
+            WHERE booking.arrival = $1 AND
+            booking.departure = $2 AND
+            booking.hotel_room_id = $3
+            RETURNING TRUE')
+        USING v_arrival, v_departure, v_hotel_room_id
+        INTO success;
+        IF success IS TRUE
+        THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END;
+    $delete_booking_by_dates_and_room$ LANGUAGE plpgsql;
+
+/* The function clear_table() returns TRUE, if the deletion was successfull.
+Otherwise (if the table had been empty before the deletion) it returns FALSE.
+Example of how it should be called:
+SELECT clear_table('booking');*/
+CREATE OR REPLACE FUNCTION clear_table(_tbl regclass)
+    RETURNS BOOL AS
+    $clear_table$
+    DECLARE
+    success BOOL;
+    BEGIN
+        EXECUTE format('DELETE FROM %I
+            RETURNING TRUE', _tbl)
+        INTO success;
+        IF success IS TRUE
+        THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END;
+    $clear_table$ LANGUAGE plpgsql;
+
+/* Example of how the function update_booked_room() should be called:
+SELECT update_booked_room(2, 1);
+2 - the booking id
+1 - the number of a new room*/
+CREATE OR REPLACE FUNCTION update_booked_room(key_val INTEGER, new_room INTEGER)
+    RETURNS VOID AS
+    $update_booked_room$
+    BEGIN
+        EXECUTE format('UPDATE booking
+            SET hotel_room_id = $1
+            WHERE booking_id = $2')
+        USING new_room, key_val;
+    END;
+    $update_booked_room$ LANGUAGE plpgsql;

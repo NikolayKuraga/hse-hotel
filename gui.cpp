@@ -85,6 +85,7 @@ DialogViewGuests::DialogViewGuests(wxWindow *parent, std::string dbName) :
     vSzrMain = new wxBoxSizer(wxVERTICAL);
     hSzrBtm->Add(txtFldLstName, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->Add(txtFldFstName, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
@@ -92,11 +93,11 @@ DialogViewGuests::DialogViewGuests(wxWindow *parent, std::string dbName) :
     vSzrMain->Add(guestLst, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
-    SetMinSize(wxSize(500, 400));
+    SetMinSize(wxSize(520, 400));
     SetSize(wxSize(600, 400));
     try {
         std::vector<std::vector<std::string>> tbl;
-        tbl = queryPrintGuests(DF_CNN, dbName);
+        tbl = queryPrintTable(DF_CNN, dbName, "guest");
         std::string txt;
         for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
             for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
@@ -115,7 +116,7 @@ void DialogViewGuests::OnFind(wxCommandEvent &event)
 {
     try {
         std::vector<std::vector<std::string>> tbl;
-        tbl = queryPrintGuests(DF_CNN, dbName);
+        tbl = queryPrintTable(DF_CNN, dbName, "guest");
         std::string txt;
         for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
             if(it->at(1) == txtFldLstName->GetValue() && it->at(2) == txtFldFstName->GetValue()) {
@@ -136,7 +137,7 @@ void DialogViewGuests::OnPrintAll(wxCommandEvent &event)
 {
     try {
         std::vector<std::vector<std::string>> tbl;
-        tbl = queryPrintGuests(DF_CNN, dbName);
+        tbl = queryPrintTable(DF_CNN, dbName, "guest");
         std::string txt;
         for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
             for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
@@ -157,44 +158,89 @@ void DialogViewGuests::OnCancel(wxCommandEvent &event)
 }
 
 DialogDeleteGuest::DialogDeleteGuest(wxWindow *parent, std::string dbName) :
-    wxDialog(parent, wxID_ANY, "Delete all guests with certain initials"), dbName(dbName)
+    wxDialog(parent, wxID_ANY, "Delete guest"), dbName(dbName)
 {
-    textFieldLastName = new wxTextCtrl(this, wxID_ANY, "<last name>");
-    textFieldFirstName = new wxTextCtrl(this, wxID_ANY, "<first name>");
-    staticTextRowSndLeft = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    buttonDelete = new wxButton(this, ID_DELETE_GUEST_DELETE, "Delete");
-    buttonCancel = new wxButton(this, ID_DELETE_GUEST_CANCEL, "Cancel");
+    radio = 0;
+    rBtnID = new wxRadioButton(this, ID_DELETE_GUEST_RADIO_ID, "Delete certain guest by ID:");
+    rBtnName = new wxRadioButton(this, ID_DELETE_GUEST_RADIO_NAME, "Delete all guests with specified initials:");
+    txtFldID = new wxTextCtrl(this, wxID_ANY, "<guest ID>");
+    txtFldLstName = new wxTextCtrl(this, wxID_ANY, "<last name>");
+    txtFldFstName = new wxTextCtrl(this, wxID_ANY, "<first name>");
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    btnDel = new wxButton(this, ID_DELETE_GUEST_DELETE, "Delete");
+    btnCancel = new wxButton(this, ID_DELETE_GUEST_CANCEL, "Cancel");
+    Connect(ID_DELETE_GUEST_RADIO_ID, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDeleteGuest::OnRadioID));
+    Connect(ID_DELETE_GUEST_RADIO_NAME, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDeleteGuest::OnRadioName));
     Connect(ID_DELETE_GUEST_DELETE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDeleteGuest::OnDelete));
     Connect(ID_DELETE_GUEST_CANCEL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDeleteGuest::OnCancel));
-    hSizerRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowFstRight = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowSndRight = new wxBoxSizer(wxHORIZONTAL);
-    gSizerMain = new wxGridSizer(2);
-    hSizerRowFstLeft->Add(textFieldLastName, 1, wxTOP | wxLEFT, 5);
-    hSizerRowFstRight->Add(textFieldFirstName, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowSndRight->Add(buttonDelete, 1, wxTOP | wxBOTTOM | wxLEFT, 5);
-    hSizerRowSndRight->Add(buttonCancel, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
-    gSizerMain->Add(hSizerRowFstLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowFstRight, 0, wxEXPAND, 0);
-    gSizerMain->Add(staticTextRowSndLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowSndRight, 0, wxEXPAND, 0);
-    SetSizer(gSizerMain);
-    SetSize(wxSize(400, 100));
+    hSzrIDRowFstRight = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowFstRight = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowSndRight = new wxBoxSizer(wxHORIZONTAL);
+    gSzrTop = new wxGridSizer(2);
+    gSzrBtm = new wxGridSizer(2);
+    vSzrMain = new wxBoxSizer(wxVERTICAL);
+    hSzrIDRowFstRight->Add(txtFldID, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    gSzrTop->Add(rBtnID, 0, wxEXPAND, 0);
+    gSzrTop->Add(hSzrIDRowFstRight, 0, wxEXPAND, 0);
+    hSzrNameRowFstLeft->Add(txtFldLstName, 1, wxTOP | wxLEFT, 5);
+    hSzrNameRowFstRight->Add(txtFldFstName, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSzrNameRowSndRight->Add(btnDel, 1, wxTOP | wxBOTTOM | wxLEFT, 5);
+    hSzrNameRowSndRight->Add(btnCancel, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    gSzrBtm->Add(hSzrNameRowFstLeft, 0, wxEXPAND, 0);
+    gSzrBtm->Add(hSzrNameRowFstRight, 0, wxEXPAND, 0);
+    gSzrBtm->Add(sTxtEmpty, 0);
+    gSzrBtm->Add(hSzrNameRowSndRight, 0, wxEXPAND, 0);
+    vSzrMain->Add(gSzrTop, 1, wxEXPAND, 0);
+    vSzrMain->Add(rBtnName, 1, wxEXPAND, 0);
+    vSzrMain->Add(gSzrBtm, 1, wxEXPAND, 0);
+    SetSizer(vSzrMain);
+    SetSize(wxSize(400, 160));
+    txtFldLstName->Enable(false);
+    txtFldFstName->Enable(false);
+    txtFldID->SetFocus();
+}
+
+void DialogDeleteGuest::OnRadioID(wxCommandEvent &event)
+{
+    radio = 0;
+    txtFldID->Enable(true);
+    txtFldLstName->Enable(false);
+    txtFldFstName->Enable(false);
+}
+
+void DialogDeleteGuest::OnRadioName(wxCommandEvent &event)
+{
+    radio = 1;
+    txtFldID->Enable(false);
+    txtFldLstName->Enable(true);
+    txtFldFstName->Enable(true);
 }
 
 void DialogDeleteGuest::OnDelete(wxCommandEvent &event)
 {
+    bool info = false;
     try {
-        queryDeleteGuest(DF_CNN, dbName,
-                         textFieldLastName->GetValue().ToStdString(),
-                         textFieldFirstName->GetValue().ToStdString());
-        wxMessageBox((std::string) "All guests with such initials were deleted!", "Success!", wxOK | wxCENTRE);
+        if(radio == 0) {
+//            info = query
+        }
+        else {
+            info = queryDeleteGuestByName(DF_CNN, dbName,
+                                          txtFldLstName->GetValue().ToStdString(),
+                                          txtFldFstName->GetValue().ToStdString());
+            if(info == true) {
+                wxMessageBox((std::string) "All guests with such initials were deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_GUEST_DELETE);
+            }
+            else {
+                wxMessageBox((std::string) "There are no any guests with such initials!\nNo one was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
+        }
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
         return;
     }
-    EndModal(ID_DELETE_GUEST_DELETE);
 }
 
 void DialogDeleteGuest::OnCancel(wxCommandEvent &event)
@@ -207,7 +253,7 @@ void FrameMenu::AssumeDBCreated()
     buttonCreateDB->Enable(false);
     buttonDropDB->Enable(true);
     buttonAddGuest->Enable(true);
-    buttonViewGuests->Enable(true);
+    btnViewGuest->Enable(true);
     buttonDeleteGuest->Enable(true);
 }
 
@@ -216,7 +262,7 @@ void FrameMenu::AssumeDBDropped()
     buttonCreateDB->Enable(true);
     buttonDropDB->Enable(false);
     buttonAddGuest->Enable(false);
-    buttonViewGuests->Enable(false);
+    btnViewGuest->Enable(false);
     buttonDeleteGuest->Enable(false);
 }
 
@@ -225,7 +271,7 @@ void FrameMenu::AssumeDBError()
     buttonCreateDB->Enable(false);
     buttonDropDB->Enable(false);
     buttonAddGuest->Enable(false);
-    buttonViewGuests->Enable(false);
+    btnViewGuest->Enable(false);
     buttonDeleteGuest->Enable(false);
 }
 
@@ -242,9 +288,9 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client")
     buttonDropDB = new wxButton(panelTopLeft, ID_DROP_DB, "Delete");
     buttonCheckDB = new wxButton(panelTopLeft, ID_CHECK_DB, "Check");
     buttonModeTest = new wxButton(panelTopLeft, ID_MODE_TEST, "Test mode");
-    buttonAddGuest = new wxButton(panelTopRight, ID_ADD_GUEST, "Add guest");
-    buttonViewGuests = new wxButton(panelTopRight, ID_VIEW_GUESTS, "View guests");
-    buttonDeleteGuest = new wxButton(panelTopRight, ID_DELETE_GUEST, "Delete all guests with certain initials");
+    buttonAddGuest = new wxButton(panelTopRight, ID_ADD_GUEST, "Add");
+    btnViewGuest = new wxButton(panelTopRight, ID_VIEW_GUESTS, "View");
+    buttonDeleteGuest = new wxButton(panelTopRight, ID_DELETE_GUEST, "Delete");
     buttonAbout = new wxButton(panelBottomLeft, wxID_ABOUT, "About");
     buttonExit = new wxButton(panelBottomRight, wxID_EXIT, "Exit");
     Connect(ID_CREATE_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnCreateDB));
@@ -257,6 +303,7 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client")
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAbout));
     Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnExit));
     vSizerControlDB = new wxStaticBoxSizer(wxVERTICAL, panelTopLeft, "Database");
+    vSizerControlGuest = new wxStaticBoxSizer(wxVERTICAL, panelTopRight, "Guest");
     vSizerTopLeft = new wxBoxSizer(wxVERTICAL);
     vSizerTopRight = new wxBoxSizer(wxVERTICAL);
     hSizerTop = new wxBoxSizer(wxHORIZONTAL);
@@ -272,9 +319,10 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client")
     vSizerTopLeft->Add(vSizerControlDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
     vSizerTopLeft->AddSpacer(20);
     vSizerTopLeft->Add(buttonModeTest, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
-    vSizerTopRight->Add(buttonAddGuest, 0, wxALIGN_CENTER | wxTOP, 5);
-    vSizerTopRight->Add(buttonViewGuests, 0, wxALIGN_CENTER | wxTOP, 5);
-    vSizerTopRight->Add(buttonDeleteGuest, 0, wxALIGN_CENTER | wxTOP, 5);
+    vSizerControlGuest->Add(buttonAddGuest, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlGuest->Add(btnViewGuest, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlGuest->Add(buttonDeleteGuest, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT | wxBOTTOM, 5);
+    vSizerTopRight->Add(vSizerControlGuest, 0, wxALIGN_CENTER | wxTOP, 5);
     hSizerTop->Add(panelTopLeft, 0, wxEXPAND, 0);
     hSizerTop->Add(panelTopRight, 1, wxEXPAND, 0);
     vSizerBottomLeft->Add(buttonAbout, 0, wxALIGN_LEFT | wxALL, 10);

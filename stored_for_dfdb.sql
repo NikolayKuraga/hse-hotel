@@ -25,7 +25,7 @@ BEGIN
     PERFORM dblink_exec('myconn','BEGIN');
     PERFORM dblink_exec('myconn',
         'CREATE TABLE guest(
-            guest_id serial PRIMARY KEY,
+            guest_id SERIAL PRIMARY KEY,
             last_name VARCHAR(30) NOT null,
             first_name VARCHAR(20) NOT null,
             patronimic VARCHAR(20),
@@ -54,30 +54,32 @@ BEGIN
             CHECK (service_class IN (''standard'', ''comfort'', ''luxury'')),
             kitchen BOOL DEFAULT FALSE)');
     PERFORM dblink_exec('myconn',
-         'CREATE TABLE booking(
+        'CREATE TABLE booking(
             booking_id SERIAL PRIMARY KEY,
             arrival DATE NOT null,
             departure DATE NOT null
-            CONSTRAINT valid_arrival_departure_dates 
+            CONSTRAINT valid_arrival_departure_dates
             CHECK(departure > arrival),
             booking_date DATE DEFAULT CURRENT_DATE,
-            CONSTRAINT valid_booking_date 
+            CONSTRAINT valid_booking_date
             CHECK(booking_date <= arrival),
             hotel_room_id INTEGER REFERENCES hotel_room
-            ON DELETE CASCADE
+            ON DELETE SET NULL
             ON UPDATE CASCADE,
             CONSTRAINT valid_booking UNIQUE (arrival, departure, hotel_room_id),
             total_cost NUMERIC(8, 2)
             CHECK (total_cost > 0),
             bank_card VARCHAR(19)
-            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13, 19}''))');
+            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13, 19}''));');
     PERFORM dblink_exec('myconn',
         'CREATE TABLE booking_guest(
-        booking_id INTEGER REFERENCES booking
-        ON DELETE CASCADE,
-        guest_id INTEGER REFERENCES guest
-        ON DELETE CASCADE,
-        PRIMARY KEY (booking_id, guest_id))');
+            booking_id INTEGER REFERENCES booking
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+            guest_id INTEGER REFERENCES guest
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+            PRIMARY KEY (booking_id, guest_id));');
     PERFORM dblink_exec('myconn',
         'CREATE OR REPLACE FUNCTION is_room_available()
             RETURNS trigger
@@ -161,16 +163,6 @@ BEGIN
         END;
         $find_guest$ LANGUAGE plpgsql');
     PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION delete_guest(
-            lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS VOID AS
-        $delete_guest$
-        BEGIN
-            DELETE FROM guest
-            WHERE guest.last_name = lst_name AND
-            guest.first_name = frst_name;
-        END;
-        $delete_guest$ LANGUAGE plpgsql');
-    PERFORM dblink_exec('myconn',
         'CREATE FUNCTION insert_guest(v_last_name VARCHAR(30),
                                      v_first_name VARCHAR(20),
                                      v_patronimic VARCHAR(20),
@@ -218,92 +210,166 @@ BEGIN
             VALUES (v_booking_id, v_guest_id);
         END;
         $insert_booking_guest$ LANGUAGE plpgsql');
-    PERFORM dblink_exec('myconn', 
-        'CREATE OR REPLACE FUNCTION print_table_guest() RETURNS TABLE(
-            guest_id INTEGER,
-            last_name VARCHAR(30),
-            first_name VARCHAR(20),
-            patronimic VARCHAR(20),
-            passport_series VARCHAR(4),
-            passport_number VARCHAR(6),
-            phone VARCHAR(10))
-        AS
-        $print_table_guest$
-        BEGIN
-            RETURN QUERY SELECT * FROM guest;
-        END;
-        $print_table_guest$ LANGUAGE plpgsql;');
-        
-    PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
-            hotel_room_id INTEGER,
-            price_per_day NUMERIC(7, 2),
-            number_of_rooms INTEGER,
-            area INTEGER,
-            service_class VARCHAR(8),
-            kitchen BOOL)
-        AS
-        $print_table_hotel_room$
-        BEGIN
-            RETURN QUERY SELECT * FROM hotel_room;
-        END;
-        $print_table_hotel_room$ LANGUAGE plpgsql;');
-        
-    PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION print_table_hotel_room() RETURNS TABLE(
-            hotel_room_id INTEGER,
-            price_per_day NUMERIC(7, 2),
-            number_of_rooms INTEGER,
-            area INTEGER,
-            service_class VARCHAR(8),
-            kitchen BOOL)
-        AS
-        $print_table_hotel_room$
-        BEGIN
-            RETURN QUERY SELECT * FROM hotel_room;
-        END;
-        $print_table_hotel_room$ LANGUAGE plpgsql;');
-        
-    PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION print_table_booking() RETURNS TABLE(
-            booking_id INTEGER,
-            arrival DATE,
-            departure DATE,
-            booking_date DATE,
-            hotel_room_id INTEGER,
-            total_cost NUMERIC(8, 2),
-            bank_card VARCHAR(19))
-        AS
-        $print_table_booking$
-        BEGIN
-            RETURN QUERY SELECT * FROM booking;
-        END;
-        $print_table_booking$ LANGUAGE plpgsql;');
-        
-    PERFORM dblink_exec('myconn', 
-        'CREATE OR REPLACE FUNCTION print_table_booking_guest() RETURNS TABLE(
-            booking_id INTEGER,
-            guest_id INTEGER)
-        AS
-        $print_table_booking_guest$
-        BEGIN
-            RETURN QUERY SELECT * FROM booking_guest;
-        END;
-        $print_table_booking_guest$ LANGUAGE plpgsql;');
 
     /* function print_table() should be called like
     SELECT * FROM print_table(NULL::guest);
     SELECT * FROM print_table(NULL::hotel_room);*/
     PERFORM dblink_exec('myconn', 
         'CREATE OR REPLACE FUNCTION print_table(_tbl anyelement)
-          RETURNS SETOF anyelement AS
-        $func$
+        RETURNS SETOF anyelement AS
+        $print_table$
         BEGIN
-        RETURN QUERY EXECUTE ''SELECT * FROM '' || pg_typeof(_tbl);
-        END
-        $func$  LANGUAGE plpgsql;');
+            RETURN QUERY EXECUTE ''SELECT * FROM '' || pg_typeof(_tbl);
+        END;
+        $print_table$ LANGUAGE plpgsql;');
 
-    PERFORM dblink_exec('myconn','COMMIT');
+    /* The function delete_row() returns TRUE, if the deletion was successfull
+    Otherwise it returns FALSE.
+    Example of how it should be called:
+    SELECT delete_row('guest', 'guest_id', 1);*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_row(_tbl regclass, key_col text, key_val INTEGER)
+        RETURNS BOOL AS
+        $delete_row$
+        DECLARE 
+        success BOOL;
+        BEGIN
+            EXECUTE format(''
+                DELETE FROM %s
+                WHERE %I = $1
+                RETURNING TRUE'', _tbl, key_col)
+            USING key_val
+            INTO success;
+            IF success IS TRUE
+            THEN
+                RETURN TRUE;
+            ELSE
+                RETURN FALSE;
+            END IF;
+        END;
+        $delete_row$ LANGUAGE plpgsql;');
+
+    /* The function delete_guest_by_name() returns TRUE, if the deletion was successfull.
+    Otherwise it returns FALSE.
+    Example of how it should be called:
+    SELECT delete_guest_by_name('Ivanov', 'Ivan');*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_guest_by_name(
+        lst_name VARCHAR(30), frst_name VARCHAR(20))
+        RETURNS BOOL AS
+        $delete_guest_by_name$
+        DECLARE
+        success BOOL;
+        BEGIN
+            EXECUTE format(''DELETE FROM guest
+                WHERE guest.last_name = $1 AND
+                guest.first_name = $2
+                RETURNING TRUE'')
+            USING lst_name, frst_name
+            INTO success;
+            IF success IS TRUE
+            THEN
+                RETURN TRUE;
+            ELSE
+                RETURN FALSE;
+            END IF;
+        END;
+        $delete_guest_by_name$ LANGUAGE plpgsql;');
+
+    /* The function delete_guest_by_passport() returns TRUE, if the deletion was successfull.
+    Otherwise it returns FALSE.
+    Example of how it should be called:
+    SELECT delete_guest_by_passport('1111', '1111111');*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_guest_by_passport(
+        v_passport_series VARCHAR(4), v_passport_number VARCHAR(6))
+        RETURNS BOOL AS
+        $delete_guest_by_passport$
+        DECLARE
+        success BOOL;
+        BEGIN
+            EXECUTE format(''DELETE FROM guest
+                WHERE guest.passport_series = $1 AND
+                guest.passport_number = $2
+                RETURNING TRUE'')
+            USING v_passport_series, v_passport_number
+            INTO success;
+            IF success IS TRUE
+            THEN
+                RETURN TRUE;
+            ELSE
+                RETURN FALSE;
+            END IF;
+        END;
+        $delete_guest_by_passport$ LANGUAGE plpgsql;');
+
+    /* The function delete_booking_by_dates_and_room() returns TRUE, if the deletion was successfull.
+    Otherwise it returns FALSE.
+    Example of how it should be called:
+    SELECT delete_row('2021-12-27', '2021-12-29', 1);*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_booking_by_dates_and_room(
+        v_arrival DATE, v_departure DATE, v_hotel_room_id INTEGER)
+        RETURNS BOOL AS
+        $delete_booking_by_dates_and_room$
+        DECLARE
+        success BOOL;
+        BEGIN
+            EXECUTE format(''DELETE FROM booking
+                WHERE booking.arrival = $1 AND
+                booking.departure = $2 AND
+                booking.hotel_room_id = $3
+                RETURNING TRUE'')
+            USING v_arrival, v_departure, v_hotel_room_id
+            INTO success;
+            IF success IS TRUE
+            THEN
+                RETURN TRUE;
+            ELSE
+                RETURN FALSE;
+            END IF;
+        END;
+        $delete_booking_by_dates_and_room$ LANGUAGE plpgsql;');
+    
+    /* The function clear_table() returns TRUE, if the deletion was successfull.
+    Otherwise (if the table had been empty before the deletion) it returns FALSE.
+    Example of how it should be called:
+    SELECT clear_table('booking');*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION clear_table(_tbl regclass)
+        RETURNS BOOL AS
+        $clear_table$
+        DECLARE
+        success BOOL;
+        BEGIN
+            EXECUTE format(''DELETE FROM %I
+                RETURNING TRUE'', _tbl)
+            INTO success;
+            IF success IS TRUE
+            THEN
+                RETURN TRUE;
+            ELSE
+                RETURN FALSE;
+            END IF;
+        END;
+        $clear_table$ LANGUAGE plpgsql;');
+    
+    /* Example of how the function update_booked_room() should be called:
+    SELECT update_booked_room(2, 1);
+    2 - the booking id
+    1 - the number of a new room*/
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION update_booked_room(key_val INTEGER, new_room INTEGER)
+        RETURNS VOID AS
+        $update_booked_room$
+        BEGIN
+            EXECUTE format(''UPDATE booking
+                SET hotel_room_id = $1
+                WHERE booking_id = $2'')
+            USING new_room, key_val;
+        END;
+        $update_booked_room$ LANGUAGE plpgsql;');
+        PERFORM dblink_exec('myconn','COMMIT');
 END;
 $create_db$ LANGUAGE plpgsql;
 

@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.04"
+#define VERSION   "2021.12.07"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -25,8 +25,10 @@ enum
     ID_VIEW_GUESTS_PRINT_ALL = 110,
     ID_VIEW_GUESTS_CLOSE = 111,
     ID_DELETE_GUEST = 112,
-    ID_DELETE_GUEST_DELETE = 113,
-    ID_DELETE_GUEST_CANCEL = 114
+    ID_DELETE_GUEST_RADIO_ID = 113,
+    ID_DELETE_GUEST_RADIO_NAME = 114,
+    ID_DELETE_GUEST_DELETE = 115,
+    ID_DELETE_GUEST_CANCEL = 116
 };
 
 class DialogAddGuest : public wxDialog
@@ -92,18 +94,27 @@ public:
 
 private:
     std::string dbName;
+    int radio;
 
-    wxTextCtrl *textFieldFirstName;
-    wxTextCtrl *textFieldLastName;
-    wxStaticText *staticTextRowSndLeft;
-    wxButton *buttonDelete;
-    wxButton *buttonCancel;
+    wxRadioButton *rBtnID;
+    wxRadioButton *rBtnName;
+    wxTextCtrl *txtFldID;
+    wxTextCtrl *txtFldFstName;
+    wxTextCtrl *txtFldLstName;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnDel;
+    wxButton *btnCancel;
 
-    wxBoxSizer *hSizerRowFstLeft;
-    wxBoxSizer *hSizerRowFstRight;
-    wxBoxSizer *hSizerRowSndRight;
-    wxGridSizer *gSizerMain;
+    wxBoxSizer *hSzrIDRowFstRight;
+    wxBoxSizer *hSzrNameRowFstLeft;
+    wxBoxSizer *hSzrNameRowFstRight;
+    wxBoxSizer *hSzrNameRowSndRight;
+    wxGridSizer *gSzrTop;
+    wxGridSizer *gSzrBtm;
+    wxBoxSizer *vSzrMain;
 
+    void OnRadioID(wxCommandEvent &event);
+    void OnRadioName(wxCommandEvent &event);
     void OnDelete(wxCommandEvent &event);
     void OnCancel(wxCommandEvent &event);
 };
@@ -127,12 +138,17 @@ private:
     wxButton *buttonCheckDB;
     wxButton *buttonModeTest;
     wxButton *buttonAddGuest;
-    wxButton *buttonViewGuests;
+    wxButton *btnViewGuest;
     wxButton *buttonDeleteGuest;
+    wxButton *btnAddRoom;
+    wxButton *btnViewRoom;
+    wxButton *btnDelRoom;
     wxButton *buttonAbout;
     wxButton *buttonExit;
 
     wxStaticBoxSizer *vSizerControlDB;
+    wxStaticBoxSizer *vSizerControlGuest;
+    wxStaticBoxSizer *vSizerControlRoom;
     wxBoxSizer *vSizerTopLeft;
     wxBoxSizer *vSizerTopRight;
     wxBoxSizer *hSizerTop;
