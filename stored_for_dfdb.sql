@@ -70,7 +70,7 @@ BEGIN
             total_cost NUMERIC(8, 2)
             CHECK (total_cost > 0),
             bank_card VARCHAR(19)
-            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13, 19}''));');
+            CONSTRAINT valid_card CHECK (bank_card ~ ''\d{13,19}''));');
     PERFORM dblink_exec('myconn',
         'CREATE TABLE booking_guest(
             booking_id INTEGER REFERENCES booking
@@ -189,16 +189,14 @@ BEGIN
         $insert_hotel_room$ LANGUAGE plpgsql');
     PERFORM dblink_exec('myconn',
         'CREATE FUNCTION insert_booking(
-            v_booking_id INTEGER,
             v_arrival DATE,
             v_departure DATE,
             v_booking_date DATE,
             v_hotel_room_id INTEGER,
-            v_total_cost NUMERIC(8, 2),
             v_bank_card VARCHAR(19)) RETURNS VOID AS $insert_booking$
         BEGIN
-            INSERT INTO booking(booking_id, arrival, departure, booking_date, hotel_room_id, total_cost, bank_card)
-            VALUES (v_booking_id, v_arrival, v_departure, v_booking_date, v_hotel_room_id, v_total_cost, v_bank_card);
+            INSERT INTO booking(arrival, departure, booking_date, hotel_room_id, bank_card)
+            VALUES (v_arrival, v_departure, v_booking_date, v_hotel_room_id, v_bank_card);
         END;
         $insert_booking$ LANGUAGE plpgsql');
     PERFORM dblink_exec('myconn',
