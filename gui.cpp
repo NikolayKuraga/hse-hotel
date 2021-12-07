@@ -222,7 +222,14 @@ void DialogDeleteGuest::OnDelete(wxCommandEvent &event)
     bool info = false;
     try {
         if(radio == 0) {
-//            info = query
+            info = queryDeleteRow(DF_CNN, dbName, "guest", "guest_id", txtFldID->GetValue().ToStdString());
+            if(info == true) {
+                wxMessageBox((std::string) "The guest was deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_GUEST_DELETE);
+            }
+            else {
+                wxMessageBox((std::string) "There is not guest with such ID!\nThe guest was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
         }
         else {
             info = queryDeleteGuestByName(DF_CNN, dbName,

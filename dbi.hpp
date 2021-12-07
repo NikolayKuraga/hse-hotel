@@ -18,7 +18,10 @@ void queryCreateDB(std::string connection, std::string dbToConnect, std::string 
 void queryDropDB(std::string connection, std::string dbToConnect, std::string dbToDrop);
 
 // queries for specified table
-std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect, std::string tableName);
+std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
+                                                      std::string tableName);
+bool queryDeleteRow(std::string connection, std::string dbToConnect,
+                    std::string table, std::string column, std::string key);
 
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,

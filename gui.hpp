@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.07"
+#define VERSION   "2021.12.09"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
