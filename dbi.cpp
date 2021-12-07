@@ -43,17 +43,15 @@ std::vector<std::vector<std::string>> queryPrintTable(std::string connection, st
     }
     return tbl;
 }
-
-bool queryDeleteRow(std::string connection, std::string dbToConnect,
-                    std::string table, std::string column, std::string key)
+/*
+bool queryDeleteRow(std::string connection, std::string dbToConnect, std::string key)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-    pqxx::result r = wrk.exec((std::string) "SELECT delete_row(\'" +
-                              table + "\', \'" + column + "\', \'" + key + "\')");
+    pqxx::result r = wrk.exec((std::string) "SELECT delete_row(" + + ")");
     wrk.commit();
-    return r.begin()[0].as<bool>();
-}
+    return r
+}*/
 
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,
@@ -86,9 +84,8 @@ bool queryDeleteGuestByName(std::string connection, std::string dbToConnect,
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-
-
     pqxx::result r = wrk.exec((std::string) "SELECT delete_guest_by_name(\'" + last_name + "\', \'" + first_name + "\')");
     wrk.commit();
     return r.begin()[0].as<bool>();
 }
+

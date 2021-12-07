@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.09"
+#define VERSION   "2021.12.07"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -28,7 +28,12 @@ enum
     ID_DELETE_GUEST_RADIO_ID = 113,
     ID_DELETE_GUEST_RADIO_NAME = 114,
     ID_DELETE_GUEST_DELETE = 115,
-    ID_DELETE_GUEST_CANCEL = 116
+    ID_DELETE_GUEST_CANCEL = 116,
+    ID_ADD_ROOM = 117,
+    ID_ADD_ROOM_ADD = 118,
+    ID_ADD_ROOM_CANCEL = 119,
+    ID_VIEW_ROOMS = 120,
+    ID_DELETE_ROOM = 121
 };
 
 class DialogAddGuest : public wxDialog
@@ -58,6 +63,37 @@ private:
     wxBoxSizer *hSizerRowTrdRight;
     wxBoxSizer *hSizerRowFthRight;
     wxBoxSizer *hSizerRowFfhRight;
+    wxGridSizer *gSizerMain;
+
+    void OnAdd(wxCommandEvent &event);
+    void OnCancel(wxCommandEvent &event);
+};
+
+class DialogAddRoom : public wxDialog
+{
+public:
+    DialogAddRoom(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxTextCtrl *textFieldRoomId;
+    wxTextCtrl *textFieldPrice;
+    wxTextCtrl *textFieldNumberOfRooms;
+    wxTextCtrl *textFieldArea;
+    wxTextCtrl *textFieldServiceClass;
+    wxTextCtrl *textFieldKitchen;
+    wxButton *buttonAdd;
+    wxButton *buttonCancel;
+
+    wxBoxSizer *hSizerRowFstLeft;
+    wxBoxSizer *hSizerRowFstRight;
+    wxBoxSizer *hSizerRowSndLeft;
+    wxBoxSizer *hSizerRowSndRight;
+    wxBoxSizer *hSizerRowTrdLeft;
+    wxBoxSizer *hSizerRowTrdRight;
+    wxBoxSizer *hSizerRowFthLeft;
+    wxBoxSizer *hSizerRowFthRight;
     wxGridSizer *gSizerMain;
 
     void OnAdd(wxCommandEvent &event);
@@ -166,6 +202,7 @@ private:
     void OnCheckDB(wxCommandEvent &event);
     void OnModeTest(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);
+    void OnAddRoom(wxCommandEvent &event);
     void OnFindGuests(wxCommandEvent &event);
     void OnViewGuests(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
