@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -Wfatal-errors
+CFLAGS=-g -Wall -Wfatal-errors -std=c++11 -DPQXX_HIDE_EXP_OPTIONAL
 
 all: main.run
 
@@ -10,7 +10,7 @@ gui.o: gui.hpp gui.cpp
 	$(CC) $(CFLAGS) -c gui.cpp `wx-config --cxxflags` -o gui.o
 
 main.run: dbi.o gui.o main.cpp
-	$(CC) $(CFLAGS) gui.o dbi.o main.cpp -lpqxx -lpq `wx-config --cxxflags --libs std, richtext` -o main.run
+	$(CC) $(CFLAGS) gui.o dbi.o main.cpp -lpqxx -lpq `wx-config --cxxflags --libs std,richtext` -o main.run
 
 clean:
-	rm gui.o dbi.o main.run
+	rm -Rf gui.o dbi.o main.run

@@ -7,28 +7,59 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.09"
+#define VERSION   "2021.12.09_dev_book"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
-enum
+enum {
+    ONE_HUNDRED = 100,
+    ID_CHECK_DB,
+    ID_CREATE_DB,
+    ID_DROP_DB,
+    ID_MODE_TEST,
+    ID_ADD_BOOKING,
+    ID_ADD_BOOKING_ADD,
+    ID_VIEW_BOOKING,
+    ID_DELETE_BOOKING,
+    ID_ADD_GUEST,
+    ID_ADD_GUEST_ADD,
+    ID_VIEW_GUEST,
+    ID_VIEW_GUEST_FIND,
+    ID_VIEW_GUEST_PRINT_ALL,
+    ID_DELETE_GUEST,
+    ID_DELETE_GUEST_RADIO_ID,
+    ID_DELETE_GUEST_RADIO_NAME,
+    ID_DELETE_GUEST_DELETE
+};
+
+class DialogAddBook : public wxDialog
 {
-    ID_CHECK_DB = 101,
-    ID_CREATE_DB = 102,
-    ID_DROP_DB = 103,
-    ID_MODE_TEST = 104,
-    ID_ADD_GUEST = 105,
-    ID_ADD_GUEST_ADD = 106,
-    ID_ADD_GUEST_CANCEL = 107,
-    ID_VIEW_GUESTS = 108,
-    ID_VIEW_GUESTS_FIND = 109,
-    ID_VIEW_GUESTS_PRINT_ALL = 110,
-    ID_VIEW_GUESTS_CLOSE = 111,
-    ID_DELETE_GUEST = 112,
-    ID_DELETE_GUEST_RADIO_ID = 113,
-    ID_DELETE_GUEST_RADIO_NAME = 114,
-    ID_DELETE_GUEST_DELETE = 115,
-    ID_DELETE_GUEST_CANCEL = 116
+public:
+    DialogAddBook(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxTextCtrl *txtFldArrival;
+    wxTextCtrl *txtFldDeparture;
+    wxTextCtrl *txtFldDate;
+    wxTextCtrl *txtFldRoom;
+    wxTextCtrl *txtFldTotalCost;
+    wxTextCtrl *txtFldBankCard;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnAdd;
+    wxButton *btnCancel;
+    wxBoxSizer *hSzrRowFstLeft;
+    wxBoxSizer *hSzrRowFstRight;
+    wxBoxSizer *hSzrRowSndLeft;
+    wxBoxSizer *hSzrRowSndRight;
+    wxBoxSizer *hSzrRowTrdLeft;
+    wxBoxSizer *hSzrRowTrdRight;
+    wxBoxSizer *hSzrRowFthRight;
+    wxGridSizer *gSzrMain;
+
+    void OnAdd(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
 };
 
 class DialogAddGuest : public wxDialog
@@ -64,10 +95,10 @@ private:
     void OnCancel(wxCommandEvent &event);
 };
 
-class DialogViewGuests : public wxDialog
+class DialogViewGuest : public wxDialog
 {
 public:
-    DialogViewGuests(wxWindow *parent, std::string dbName);
+    DialogViewGuest(wxWindow *parent, std::string dbName);
 
 private:
     std::string dbName;
@@ -137,6 +168,9 @@ private:
     wxButton *buttonDropDB;
     wxButton *buttonCheckDB;
     wxButton *buttonModeTest;
+    wxButton *btnAddBook;
+    wxButton *btnViewBook;
+    wxButton *btnDelBook;
     wxButton *buttonAddGuest;
     wxButton *btnViewGuest;
     wxButton *buttonDeleteGuest;
@@ -147,6 +181,7 @@ private:
     wxButton *buttonExit;
 
     wxStaticBoxSizer *vSizerControlDB;
+    wxStaticBoxSizer *vSzrControlBook;
     wxStaticBoxSizer *vSizerControlGuest;
     wxStaticBoxSizer *vSizerControlRoom;
     wxBoxSizer *vSizerTopLeft;
@@ -165,9 +200,11 @@ private:
     void OnDropDB(wxCommandEvent &event);
     void OnCheckDB(wxCommandEvent &event);
     void OnModeTest(wxCommandEvent &event);
+    void OnAddBook(wxCommandEvent &event);
+    void OnViewBook(wxCommandEvent &event);
+    void OnDeleteBook(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);
-    void OnFindGuests(wxCommandEvent &event);
-    void OnViewGuests(wxCommandEvent &event);
+    void OnViewGuest(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);

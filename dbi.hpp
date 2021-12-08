@@ -23,10 +23,11 @@ std::vector<std::vector<std::string>> queryPrintTable(std::string connection, st
 bool queryDeleteRow(std::string connection, std::string dbToConnect,
                     std::string table, std::string column, std::string key);
 
-// room queries
-void queryAddRoom(std::string connection, std::string dbToConnect,
-                  std::string room_id, std::string price_per_day, std::string num_of_rooms,
-                  std::string area, std::string service_class, std::string kitchen);
+// booking queries
+void queryAddBook(std::string connection, std::string dbToConnect,
+                  std::string book_id, std::string arrival, std::string departure,
+                  std::string book_date, std::string room_id, std::string total_cost,
+                  std::string bank_card);
 
 // guest queries
 void queryAddGuest(std::string connection, std::string dbToConnect,
@@ -34,5 +35,10 @@ void queryAddGuest(std::string connection, std::string dbToConnect,
                    std::string passport_series, std::string passport_number, std::string phone);
 bool queryDeleteGuestByName(std::string connection, std::string dbToConnect,
                             std::string lst_name, std::string fst_name);
+
+// room queries
+void queryAddRoom(std::string connection, std::string dbToConnect,
+                  std::string room_id, std::string price_per_day, std::string num_of_rooms,
+                  std::string area, std::string service_class, std::string kitchen);
 
 #endif//DBI_HPP
