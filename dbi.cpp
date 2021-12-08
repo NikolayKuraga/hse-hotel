@@ -27,7 +27,8 @@ void queryDropDB(std::string connection, std::string dbToConnect, std::string db
 }
 
 // queries for specified table
-std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect, std::string tableName)
+std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
+                                                      std::string tableName)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
@@ -43,15 +44,29 @@ std::vector<std::vector<std::string>> queryPrintTable(std::string connection, st
     }
     return tbl;
 }
-/*
-bool queryDeleteRow(std::string connection, std::string dbToConnect, std::string key)
+
+bool queryDeleteRow(std::string connection, std::string dbToConnect,
+                    std::string table, std::string column, std::string key)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-    pqxx::result r = wrk.exec((std::string) "SELECT delete_row(" + + ")");
+    pqxx::result r = wrk.exec((std::string) "SELECT delete_row(\'" +
+                              table + "\', \'" + column + "\', \'" + key + "\')");
     wrk.commit();
-    return r
-}*/
+    return r.begin()[0].as<bool>();
+}
+
+// booking queries
+void queryAddBook(std::string connection, std::string dbToConnect,
+                  std::string book_id, std::string arrival, std::string departure,
+                  std::string book_date, std::string room_id, std::string total_cost,
+                  std::string bank_card)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "");
+    wrk.commit();
+}
 
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,
