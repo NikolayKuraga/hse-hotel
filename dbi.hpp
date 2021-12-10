@@ -21,8 +21,8 @@ void queryDropDB(std::string connection, std::string dbToConnect, std::string db
 std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
                                                       std::string tableName);
 bool queryDeleteRow(std::string connection, std::string dbToConnect,
-                    std::string table, std::string column, std::string key);
-
+                    std::string table, std::string columnWithKeys, std::string key);
+bool queryClearTable(std::string connection, std::string dbToConnect, std::string tableToClear);
 
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,
@@ -31,10 +31,12 @@ void queryAddBook(std::string connection, std::string dbToConnect,
 
 // guest queries
 void queryAddGuest(std::string connection, std::string dbToConnect,
-                   std::string lst_name, std::string fst_name, std::string patronimic,
+                   std::string last_name, std::string first_name, std::string patronimic,
                    std::string passport_series, std::string passport_number, std::string phone);
 bool queryDeleteGuestByName(std::string connection, std::string dbToConnect,
-                            std::string lst_name, std::string fst_name);
+                            std::string last_name, std::string fist_name);
+bool queryDeleteGuestByPassport(std::string connection, std::string dbToConnect,
+                                std::string passport_serial, std::string passport_number);
 
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,

@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.10"
+#define VERSION   "2021.12.11"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -30,7 +30,9 @@ enum {
     ID_VIEW_GUEST_CLOSE,
     ID_DELETE_GUEST,
     ID_DELETE_GUEST_RADIO_ID,
+    ID_DELETE_GUEST_RADIO_PASSPORT,
     ID_DELETE_GUEST_RADIO_NAME,
+    ID_DELETE_GUEST_RADIO_DELETE_ALL,
     ID_DELETE_GUEST_DELETE,
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
@@ -183,24 +185,34 @@ private:
     int radio;
 
     wxRadioButton *rBtnID;
+    wxRadioButton *rBtnPassport;
     wxRadioButton *rBtnName;
+    wxRadioButton *rBtnDelAll;
     wxTextCtrl *txtFldID;
+    wxTextCtrl *txtFldPassportSer;
+    wxTextCtrl *txtFldPassportNum;
     wxTextCtrl *txtFldFstName;
     wxTextCtrl *txtFldLstName;
     wxStaticText *sTxtEmpty;
     wxButton *btnDel;
     wxButton *btnCancel;
 
-    wxBoxSizer *hSzrIDRowFstRight;
-    wxBoxSizer *hSzrNameRowFstLeft;
-    wxBoxSizer *hSzrNameRowFstRight;
-    wxBoxSizer *hSzrNameRowSndRight;
-    wxGridSizer *gSzrTop;
-    wxGridSizer *gSzrBtm;
+    wxBoxSizer *hSzrID;
+    wxBoxSizer *hSzrPassportNum;
+    wxBoxSizer *hSzrPassportSer;
+    wxBoxSizer *hSzrLstName;
+    wxBoxSizer *hSzrFstName;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrID;
+    wxGridSizer *gSzrPassport;
+    wxGridSizer *gSzrName;
+    wxGridSizer *gSzrBtns;
     wxBoxSizer *vSzrMain;
 
     void OnRadioID(wxCommandEvent &event);
+    void OnRadioPassport(wxCommandEvent &event);
     void OnRadioName(wxCommandEvent &event);
+    void OnRadioDeleteAll(wxCommandEvent &event);
     void OnDelete(wxCommandEvent &event);
 };
 
