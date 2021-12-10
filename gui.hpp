@@ -35,6 +35,7 @@ enum {
     ID_ADD_ROOM_ADD,
     ID_VIEW_ROOM,
     ID_DELETE_ROOM,
+    ID_DELETE_ROOM_DELETE,
     ID_VIEW_ROOM_PRINT_ALL,
     ID_VIEW_ROOM_CLOSE
 };
@@ -205,6 +206,30 @@ private:
     void OnDelete(wxCommandEvent &event);
 };
 
+class DialogDeleteRoom : public wxDialog
+{
+public:
+    DialogDeleteRoom(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+    wxStaticText *sTxtID;
+    wxTextCtrl *txtFldID;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnDel;
+    wxButton *btnCancel;
+
+    wxBoxSizer *hSzrIDRowFstRight;
+    wxBoxSizer *hSzrNameRowFstLeft;
+    wxBoxSizer *hSzrNameRowFstRight;
+    wxBoxSizer *hSzrNameRowSndRight;
+    wxGridSizer *gSzrTop;
+    wxGridSizer *gSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnDelete(wxCommandEvent &event);
+};
+
 class FrameMenu : public wxFrame
 {
 public:
@@ -263,6 +288,7 @@ private:
     void OnViewGuest(wxCommandEvent &event);
     void OnViewRoom(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
+    void OnDeleteRoom(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);
 };

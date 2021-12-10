@@ -319,6 +319,56 @@ DialogDeleteGuest::DialogDeleteGuest(wxWindow *parent, std::string dbName) :
     txtFldID->SetFocus();
 }
 
+DialogDeleteRoom::DialogDeleteRoom(wxWindow *parent, std::string dbName):
+    wxDialog(parent, wxID_ANY, "Delete Room"), dbName(dbName)
+{
+    sTxtID = new wxStaticText(this, ID_DELETE_GUEST_RADIO_ID, "Delete the room by ID:");
+    txtFldID = new wxTextCtrl(this, wxID_ANY, "<room ID>");
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    btnDel = new wxButton(this, ID_DELETE_ROOM_DELETE, "Delete");
+    btnCancel = new wxButton(this, wxID_OK, "Cancel");
+    Connect(ID_DELETE_ROOM_DELETE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDeleteRoom::OnDelete));
+    hSzrIDRowFstRight = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowFstRight = new wxBoxSizer(wxHORIZONTAL);
+    hSzrNameRowSndRight = new wxBoxSizer(wxHORIZONTAL);
+    gSzrTop = new wxGridSizer(2);
+    gSzrBtm = new wxGridSizer(2);
+    vSzrMain = new wxBoxSizer(wxVERTICAL);
+    hSzrNameRowFstLeft->Add(sTxtID, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    gSzrTop->Add(hSzrNameRowFstLeft, 0, wxEXPAND, 0);
+    hSzrIDRowFstRight->Add(txtFldID, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    gSzrTop->Add(hSzrIDRowFstRight, 0, wxEXPAND, 0);
+    hSzrNameRowSndRight->Add(btnDel, 1, wxTOP | wxBOTTOM | wxLEFT, 5);
+    hSzrNameRowSndRight->Add(btnCancel, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    gSzrBtm->Add(sTxtEmpty, 0);
+    gSzrBtm->Add(hSzrNameRowSndRight, 0, wxEXPAND, 0);
+    vSzrMain->Add(gSzrTop, 1, wxEXPAND, 0);
+    vSzrMain->Add(gSzrBtm, 0, wxEXPAND, 0);
+    SetSizer(vSzrMain);
+    SetSize(wxSize(400, 160));
+    txtFldID->SetFocus();
+}
+
+void DialogDeleteRoom::OnDelete(wxCommandEvent &event)
+{
+	bool info = false;
+    try {
+        info = queryDeleteRow(DF_CNN, dbName, "hotel_room", "hotel_room_id", txtFldID->GetValue().ToStdString());
+        if(info == true) {
+            wxMessageBox((std::string) "The room was deleted!", "Success!", wxOK | wxCENTRE);
+            EndModal(ID_DELETE_ROOM_DELETE);
+        }
+        else {
+            wxMessageBox((std::string) "There is no room with such ID!\nThe room was not deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+        }
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        return;
+    }
+}
+
 void DialogDeleteGuest::OnRadioID(wxCommandEvent &event)
 {
     radio = 0;
@@ -465,6 +515,7 @@ FrameMenu::FrameMenu() : wxFrame(NULL, wxID_ANY, "HSE Hotel Client")
     Connect(ID_VIEW_GUEST, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnViewGuest));
     Connect(ID_VIEW_ROOM, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnViewRoom));
     Connect(ID_DELETE_GUEST, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnDeleteGuest));
+    Connect(ID_DELETE_ROOM, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnDeleteRoom));
     Connect(wxID_ABOUT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAbout));
     Connect(wxID_EXIT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnExit));
     vSizerControlDB = new wxStaticBoxSizer(wxVERTICAL, panelTopLeft, "Database");
@@ -652,6 +703,13 @@ void FrameMenu::OnViewBook(wxCommandEvent &event)
 void FrameMenu::OnDeleteBook(wxCommandEvent &event)
 {
     
+}
+
+void FrameMenu::OnDeleteRoom(wxCommandEvent &event)
+{
+    DialogDeleteRoom *dialogDeleteRoom = new DialogDeleteRoom(this, textFieldDBName->GetValue().ToStdString());
+    dialogDeleteRoom->ShowModal();
+    dialogDeleteRoom->Destroy();
 }
 
 void FrameMenu::OnAddGuest(wxCommandEvent &event)
