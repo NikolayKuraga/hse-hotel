@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.09"
+#define VERSION   "2021.12.10"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -20,6 +20,7 @@ enum {
     ID_ADD_BOOKING,
     ID_ADD_BOOKING_ADD,
     ID_VIEW_BOOKING,
+    ID_VIEW_BOOKING_CLOSE,
     ID_DELETE_BOOKING,
     ID_ADD_GUEST,
     ID_ADD_GUEST_ADD,
@@ -49,8 +50,8 @@ private:
     wxTextCtrl *txtFldDeparture;
     wxTextCtrl *txtFldDate;
     wxTextCtrl *txtFldRoom;
-    wxTextCtrl *txtFldTotalCost;
-    wxTextCtrl *txtFldBankCard;
+    wxTextCtrl *txtFldCost;
+    wxTextCtrl *txtFldCard;
     wxStaticText *sTxtEmpty;
     wxButton *btnAdd;
     wxButton *btnCancel;
@@ -64,6 +65,27 @@ private:
     wxGridSizer *gSzrMain;
 
     void OnAdd(wxCommandEvent &event);
+};
+
+class DialogViewBook : public wxDialog
+{
+public:
+    DialogViewBook(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *bookLst;
+    wxTextCtrl *txtFldLstName;
+    wxTextCtrl *txtFldFstName;
+    wxButton *btnFind;
+    wxButton *btnPrintAll;
+    wxButton *btnClose;
+
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnClose(wxCommandEvent &event);
 };
 
 class DialogAddGuest : public wxDialog
@@ -141,7 +163,7 @@ private:
     wxTextCtrl *txtFldFstName;
     wxButton *btnFind;
     wxButton *btnPrintAll;
-    wxButton *btnCancel;
+    wxButton *btnClose;
 
     wxBoxSizer *hSzrBtm;
     wxBoxSizer *vSzrMain;

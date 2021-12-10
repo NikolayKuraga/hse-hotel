@@ -26,9 +26,8 @@ bool queryDeleteRow(std::string connection, std::string dbToConnect,
 
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,
-                  std::string book_id, std::string arrival, std::string departure,
-                  std::string book_date, std::string room_id, std::string total_cost,
-                  std::string bank_card);
+                  std::string arrival, std::string departure, std::string date,
+                  std::string room, std::string card);
 
 // guest queries
 void queryAddGuest(std::string connection, std::string dbToConnect,
