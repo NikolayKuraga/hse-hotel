@@ -34,7 +34,9 @@ enum {
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
     ID_VIEW_ROOM,
-    ID_DELETE_ROOM
+    ID_DELETE_ROOM,
+    ID_VIEW_ROOM_PRINT_ALL,
+    ID_VIEW_ROOM_CLOSE
 };
 
 class DialogAddBook : public wxDialog
@@ -112,6 +114,7 @@ private:
     wxTextCtrl *textFieldArea;
     wxTextCtrl *textFieldServiceClass;
     wxTextCtrl *textFieldKitchen;
+    wxStaticText *sTxtEmpty;
     wxButton *buttonAdd;
     wxButton *buttonCancel;
 
@@ -147,6 +150,26 @@ private:
     wxBoxSizer *vSzrMain;
 
     void OnFind(wxCommandEvent &event);
+    void OnPrintAll(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
+};
+
+class DialogViewRoom : public wxDialog
+{
+public:
+    DialogViewRoom(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+    
+    wxRichTextCtrl *roomLst;
+    wxButton *btnPrintAll;
+    wxButton *btnCancel;
+    wxPanel *panel;
+    wxBoxSizer *hSzrBtm1;
+    wxBoxSizer *hSzrBtm2;
+    wxBoxSizer *vSzrMain;
+
     void OnPrintAll(wxCommandEvent &event);
     void OnClose(wxCommandEvent &event);
 };
@@ -238,6 +261,7 @@ private:
     void OnAddGuest(wxCommandEvent &event);
     void OnAddRoom(wxCommandEvent &event);
     void OnViewGuest(wxCommandEvent &event);
+    void OnViewRoom(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);
