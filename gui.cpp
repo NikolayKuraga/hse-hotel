@@ -322,49 +322,76 @@ DialogDeleteGuest::DialogDeleteGuest(wxWindow *parent, std::string dbName) :
 DialogDeleteRoom::DialogDeleteRoom(wxWindow *parent, std::string dbName):
     wxDialog(parent, wxID_ANY, "Delete Room"), dbName(dbName)
 {
-    sTxtID = new wxStaticText(this, ID_DELETE_GUEST_RADIO_ID, "Delete the room by ID:");
+	radio = ID_DELETE_ROOM_RADIO_ID;
+    rBtnID = new wxRadioButton(this, ID_DELETE_ROOM_RADIO_ID, "Delete the room by ID:");
+    rBtnDelAll = new wxRadioButton(this, ID_DELETE_ROOM_RADIO_DELETE_ALL, "Delete all rooms (clear the table)");
     txtFldID = new wxTextCtrl(this, wxID_ANY, "<room ID>");
     sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
     btnDel = new wxButton(this, ID_DELETE_ROOM_DELETE, "Delete");
     btnCancel = new wxButton(this, wxID_OK, "Cancel");
+    Connect(ID_DELETE_ROOM_RADIO_ID, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDeleteRoom::OnRadioID));
+    Connect(ID_DELETE_ROOM_RADIO_DELETE_ALL, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDeleteRoom::OnRadioDelAll));
     Connect(ID_DELETE_ROOM_DELETE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDeleteRoom::OnDelete));
-    hSzrIDRowFstRight = new wxBoxSizer(wxHORIZONTAL);
-    hSzrNameRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSzrNameRowFstRight = new wxBoxSizer(wxHORIZONTAL);
-    hSzrNameRowSndRight = new wxBoxSizer(wxHORIZONTAL);
-    gSzrTop = new wxGridSizer(2);
+    hSzrTxtFldID = new wxBoxSizer(wxHORIZONTAL);
+    hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
+    gSzrID = new wxGridSizer(2);
     gSzrBtm = new wxGridSizer(2);
     vSzrMain = new wxBoxSizer(wxVERTICAL);
-    hSzrNameRowFstLeft->Add(sTxtID, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
-    gSzrTop->Add(hSzrNameRowFstLeft, 0, wxEXPAND, 0);
-    hSzrIDRowFstRight->Add(txtFldID, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
-    gSzrTop->Add(hSzrIDRowFstRight, 0, wxEXPAND, 0);
-    hSzrNameRowSndRight->Add(btnDel, 1, wxTOP | wxBOTTOM | wxLEFT, 5);
-    hSzrNameRowSndRight->Add(btnCancel, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
-    gSzrBtm->Add(sTxtEmpty, 0);
-    gSzrBtm->Add(hSzrNameRowSndRight, 0, wxEXPAND, 0);
-    vSzrMain->Add(gSzrTop, 1, wxEXPAND, 0);
+    hSzrTxtFldID->Add(txtFldID, 1, wxLEFT | wxRIGHT, 5);
+    gSzrID->Add(rBtnID, 0, wxEXPAND | wxTOP, 5);
+    gSzrID->Add(hSzrTxtFldID, 0, wxEXPAND | wxTOP, 5);
+    hSzrBtns->Add(btnDel, 1, wxLEFT, 5);
+    hSzrBtns->Add(btnCancel, 1, wxLEFT | wxRIGHT, 5);
+    gSzrBtm->Add(sTxtEmpty, 0, wxTOP | wxBOTTOM, 5);
+    gSzrBtm->Add(hSzrBtns, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    vSzrMain->Add(gSzrID, 0, wxEXPAND, 0);
+    vSzrMain->Add(rBtnDelAll, 0, wxEXPAND | wxTOP, 5);
     vSzrMain->Add(gSzrBtm, 0, wxEXPAND, 0);
-    SetSizer(vSzrMain);
-    SetSize(wxSize(400, 160));
+    SetSizerAndFit(vSzrMain);
     txtFldID->SetFocus();
 }
+
+void DialogDeleteRoom::OnRadioID(wxCommandEvent &event)
+{
+    radio = ID_DELETE_ROOM_RADIO_ID;
+    txtFldID->Enable(true);
+}
+
+void DialogDeleteRoom::OnRadioDelAll(wxCommandEvent &event)
+{
+    radio = ID_DELETE_ROOM_RADIO_DELETE_ALL;
+    txtFldID->Enable(false);
+}
+
+
 
 void DialogDeleteRoom::OnDelete(wxCommandEvent &event)
 {
 	bool info = false;
     try {
-        info = queryDeleteRow(DF_CNN, dbName, "hotel_room", "hotel_room_id", txtFldID->GetValue().ToStdString());
-        if(info == true) {
-            wxMessageBox((std::string) "The room was deleted!", "Success!", wxOK | wxCENTRE);
-            EndModal(ID_DELETE_ROOM_DELETE);
+        if(radio == ID_DELETE_ROOM_RADIO_ID) {
+            info = queryDeleteRow(DF_CNN, dbName, "hotel_room", "hotel_room_id", txtFldID->GetValue().ToStdString());
+            if(info == true) {
+                wxMessageBox("The room was deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_ROOM_DELETE);
+            }
+            else {
+                wxMessageBox("There is no room with such ID!\nNothing was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
         }
-        else {
-            wxMessageBox((std::string) "There is no room with such ID!\nThe room was not deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+        else if(radio == ID_DELETE_ROOM_RADIO_DELETE_ALL) {
+            info = queryClearTable(DF_CNN, dbName, "hotel_room");
+            if(info == true) {
+                wxMessageBox("All rooms have been deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_ROOM_DELETE);
+            }
+            else {
+                wxMessageBox("There are already no rooms in this table!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
         }
     }
     catch(const std::exception &e) {
-        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error", wxOK | wxCENTRE | wxICON_ERROR);
         return;
     }
 }

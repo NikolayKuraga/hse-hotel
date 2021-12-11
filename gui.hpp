@@ -36,6 +36,8 @@ enum {
     ID_VIEW_ROOM,
     ID_DELETE_ROOM,
     ID_DELETE_ROOM_DELETE,
+    ID_DELETE_ROOM_RADIO_ID,
+    ID_DELETE_ROOM_RADIO_DELETE_ALL,
     ID_VIEW_ROOM_PRINT_ALL,
     ID_VIEW_ROOM_CLOSE
 };
@@ -213,20 +215,23 @@ public:
 
 private:
     std::string dbName;
-    wxStaticText *sTxtID;
-    wxTextCtrl *txtFldID;
+    int radio;
+    
+    wxRadioButton *rBtnID;
+    wxRadioButton *rBtnDelAll;
     wxStaticText *sTxtEmpty;
+    wxTextCtrl *txtFldID;
     wxButton *btnDel;
     wxButton *btnCancel;
 
-    wxBoxSizer *hSzrIDRowFstRight;
-    wxBoxSizer *hSzrNameRowFstLeft;
-    wxBoxSizer *hSzrNameRowFstRight;
-    wxBoxSizer *hSzrNameRowSndRight;
-    wxGridSizer *gSzrTop;
+    wxBoxSizer *hSzrTxtFldID;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrID;
     wxGridSizer *gSzrBtm;
     wxBoxSizer *vSzrMain;
 
+    void OnRadioID(wxCommandEvent &event);
+    void OnRadioDelAll(wxCommandEvent &event);
     void OnDelete(wxCommandEvent &event);
 };
 

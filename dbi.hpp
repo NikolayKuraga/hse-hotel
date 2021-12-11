@@ -22,7 +22,7 @@ std::vector<std::vector<std::string>> queryPrintTable(std::string connection, st
                                                       std::string tableName);
 bool queryDeleteRow(std::string connection, std::string dbToConnect,
                     std::string table, std::string column, std::string key);
-
+bool queryClearTable(std::string connection, std::string dbToConnect, std::string tableToClear);
 
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,

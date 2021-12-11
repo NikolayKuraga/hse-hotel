@@ -56,6 +56,15 @@ bool queryDeleteRow(std::string connection, std::string dbToConnect,
     return r.begin()[0].as<bool>();
 }
 
+bool queryClearTable(std::string connection, std::string dbToConnect, std::string tableToClear)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "SELECT clear_table(\'" + tableToClear + "\');");
+    wrk.commit();
+    return r.begin()[0].as<bool>();
+}
+
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,
                   std::string book_id, std::string arrival, std::string departure,
