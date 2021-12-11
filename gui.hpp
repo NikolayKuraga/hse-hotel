@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.09"
+#define VERSION   "2021.12.11_totality"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -20,7 +20,12 @@ enum {
     ID_ADD_BOOKING,
     ID_ADD_BOOKING_ADD,
     ID_VIEW_BOOKING,
+    ID_VIEW_BOOKING_PRINT_ALL,
+    ID_VIEW_BOOKING_CLOSE,
     ID_DELETE_BOOKING,
+    ID_DELETE_BOOKING_RADIO_ID,
+    ID_DELETE_BOOKING_RADIO_DELETE_ALL,
+    ID_DELETE_BOOKING_DELETE,
     ID_ADD_GUEST,
     ID_ADD_GUEST_ADD,
     ID_VIEW_GUEST,
@@ -29,7 +34,9 @@ enum {
     ID_VIEW_GUEST_CLOSE,
     ID_DELETE_GUEST,
     ID_DELETE_GUEST_RADIO_ID,
+    ID_DELETE_GUEST_RADIO_PASSPORT,
     ID_DELETE_GUEST_RADIO_NAME,
+    ID_DELETE_GUEST_RADIO_DELETE_ALL,
     ID_DELETE_GUEST_DELETE,
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
@@ -54,21 +61,66 @@ private:
     wxTextCtrl *txtFldDeparture;
     wxTextCtrl *txtFldDate;
     wxTextCtrl *txtFldRoom;
-    wxTextCtrl *txtFldTotalCost;
-    wxTextCtrl *txtFldBankCard;
+    wxTextCtrl *txtFldCard;
     wxStaticText *sTxtEmpty;
     wxButton *btnAdd;
     wxButton *btnCancel;
-    wxBoxSizer *hSzrRowFstLeft;
-    wxBoxSizer *hSzrRowFstRight;
-    wxBoxSizer *hSzrRowSndLeft;
-    wxBoxSizer *hSzrRowSndRight;
-    wxBoxSizer *hSzrRowTrdLeft;
-    wxBoxSizer *hSzrRowTrdRight;
-    wxBoxSizer *hSzrRowFthRight;
+    wxBoxSizer *hSzrFldArrival;
+    wxBoxSizer *hSzrFldDeparture;
+    wxBoxSizer *hSzrFldDate;
+    wxBoxSizer *hSzrFldRoom;
+    wxBoxSizer *hSzrFldCard;
+    wxBoxSizer *hSzrBtns;
     wxGridSizer *gSzrMain;
 
     void OnAdd(wxCommandEvent &event);
+};
+
+class DialogViewBook : public wxDialog
+{
+public:
+    DialogViewBook(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *bookLst;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnPrintAll;
+    wxButton *btnClose;
+
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnPrintAll(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
+};
+
+class DialogDeleteBook : public wxDialog
+{
+public:
+    DialogDeleteBook(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+    int radio;
+
+    wxRadioButton *rBtnID;
+    wxRadioButton *rBtnDelAll;
+    wxTextCtrl *txtFldID;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnDel;
+    wxButton *btnCancel;
+
+    wxBoxSizer *hSzrTxtFldID;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrID;
+    wxGridSizer *gSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnRadioID(wxCommandEvent &event);
+    void OnRadioDelAll(wxCommandEvent &event);
+    void OnDelete(wxCommandEvent &event);
 };
 
 class DialogAddGuest : public wxDialog
@@ -103,6 +155,70 @@ private:
     void OnAdd(wxCommandEvent &event);
 };
 
+class DialogViewGuest : public wxDialog
+{
+public:
+    DialogViewGuest(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *guestLst;
+    wxTextCtrl *txtFldLstName;
+    wxTextCtrl *txtFldFstName;
+    wxButton *btnFind;
+    wxButton *btnPrintAll;
+    wxButton *btnClose;
+
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnFind(wxCommandEvent &event);
+    void OnPrintAll(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
+};
+
+class DialogDeleteGuest : public wxDialog
+{
+public:
+    DialogDeleteGuest(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+    int radio;
+
+    wxRadioButton *rBtnID;
+    wxRadioButton *rBtnPassport;
+    wxRadioButton *rBtnName;
+    wxRadioButton *rBtnDelAll;
+    wxTextCtrl *txtFldID;
+    wxTextCtrl *txtFldPassportSer;
+    wxTextCtrl *txtFldPassportNum;
+    wxTextCtrl *txtFldFstName;
+    wxTextCtrl *txtFldLstName;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnDel;
+    wxButton *btnCancel;
+
+    wxBoxSizer *hSzrTxtFldID;
+    wxBoxSizer *hSzrTxtFldPassportNum;
+    wxBoxSizer *hSzrTxtFldPassportSer;
+    wxBoxSizer *hSzrTxtFldLstName;
+    wxBoxSizer *hSzrTxtFldFstName;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrID;
+    wxGridSizer *gSzrPassport;
+    wxGridSizer *gSzrName;
+    wxGridSizer *gSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnRadioID(wxCommandEvent &event);
+    void OnRadioPassport(wxCommandEvent &event);
+    void OnRadioName(wxCommandEvent &event);
+    void OnRadioDelAll(wxCommandEvent &event);
+    void OnDelete(wxCommandEvent &event);
+};
+
 class DialogAddRoom : public wxDialog
 {
 public:
@@ -134,29 +250,6 @@ private:
     void OnAdd(wxCommandEvent &event);
 };
 
-class DialogViewGuest : public wxDialog
-{
-public:
-    DialogViewGuest(wxWindow *parent, std::string dbName);
-
-private:
-    std::string dbName;
-
-    wxRichTextCtrl *guestLst;
-    wxTextCtrl *txtFldLstName;
-    wxTextCtrl *txtFldFstName;
-    wxButton *btnFind;
-    wxButton *btnPrintAll;
-    wxButton *btnCancel;
-
-    wxBoxSizer *hSzrBtm;
-    wxBoxSizer *vSzrMain;
-
-    void OnFind(wxCommandEvent &event);
-    void OnPrintAll(wxCommandEvent &event);
-    void OnClose(wxCommandEvent &event);
-};
-
 class DialogViewRoom : public wxDialog
 {
 public:
@@ -175,37 +268,6 @@ private:
 
     void OnPrintAll(wxCommandEvent &event);
     void OnClose(wxCommandEvent &event);
-};
-
-class DialogDeleteGuest : public wxDialog
-{
-public:
-    DialogDeleteGuest(wxWindow *parent, std::string dbName);
-
-private:
-    std::string dbName;
-    int radio;
-
-    wxRadioButton *rBtnID;
-    wxRadioButton *rBtnName;
-    wxTextCtrl *txtFldID;
-    wxTextCtrl *txtFldFstName;
-    wxTextCtrl *txtFldLstName;
-    wxStaticText *sTxtEmpty;
-    wxButton *btnDel;
-    wxButton *btnCancel;
-
-    wxBoxSizer *hSzrIDRowFstRight;
-    wxBoxSizer *hSzrNameRowFstLeft;
-    wxBoxSizer *hSzrNameRowFstRight;
-    wxBoxSizer *hSzrNameRowSndRight;
-    wxGridSizer *gSzrTop;
-    wxGridSizer *gSzrBtm;
-    wxBoxSizer *vSzrMain;
-
-    void OnRadioID(wxCommandEvent &event);
-    void OnRadioName(wxCommandEvent &event);
-    void OnDelete(wxCommandEvent &event);
 };
 
 class DialogDeleteRoom : public wxDialog
@@ -233,6 +295,7 @@ private:
     void OnRadioID(wxCommandEvent &event);
     void OnRadioDelAll(wxCommandEvent &event);
     void OnDelete(wxCommandEvent &event);
+
 };
 
 class FrameMenu : public wxFrame
