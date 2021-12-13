@@ -114,6 +114,17 @@ bool queryDeleteGuestByPassport(std::string connection, std::string dbToConnect,
     return r.begin()[0].as<bool>();
 }
 
+// link queries
+void queryAddLink(std::string connection, std::string dbToConnect,
+                  std::string book_id, std::string guest_id)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    wrk.exec((std::string) "SELECT insert_booking_guest(\'" +
+             book_id + "\', '" + guest_id + "\');");
+    wrk.commit();
+}
+
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,
                   std::string room_id, std::string price_per_day, std::string num_of_rooms,

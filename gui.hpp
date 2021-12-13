@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.11_totality"
+#define VERSION   "2021.12.13"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -38,15 +38,25 @@ enum {
     ID_DELETE_GUEST_RADIO_NAME,
     ID_DELETE_GUEST_RADIO_DELETE_ALL,
     ID_DELETE_GUEST_DELETE,
+    ID_ADD_LINK,
+    ID_ADD_LINK_ADD,
+    ID_VIEW_LINK,
+    ID_VIEW_LINK_PRINT_ALL,
+    ID_VIEW_LINK_CLOSE,
+    ID_DELETE_LINK,
+    ID_DELETE_LINK_DELETE,
+    ID_DELETE_LINK_RADIO_GUEST_ID,
+    ID_DELETE_LINK_RADIO_BOOKING_ID,
+    ID_DELETE_LINK_RADIO_DELETE_ALL,
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
     ID_VIEW_ROOM,
+    ID_VIEW_ROOM_PRINT_ALL,
+    ID_VIEW_ROOM_CLOSE,
     ID_DELETE_ROOM,
     ID_DELETE_ROOM_DELETE,
     ID_DELETE_ROOM_RADIO_ID,
-    ID_DELETE_ROOM_RADIO_DELETE_ALL,
-    ID_VIEW_ROOM_PRINT_ALL,
-    ID_VIEW_ROOM_CLOSE
+    ID_DELETE_ROOM_RADIO_DELETE_ALL
 };
 
 class DialogAddBook : public wxDialog
@@ -219,6 +229,55 @@ private:
     void OnDelete(wxCommandEvent &event);
 };
 
+class DialogAddLink : public wxDialog
+{
+public:
+    DialogAddLink(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxTextCtrl *txtFldBookID;
+    wxTextCtrl *txtFldGuestID;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnAdd;
+    wxButton *btnCancel;
+    wxBoxSizer *hSzrFldBookID;
+    wxBoxSizer *hSzrFldGuestID;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrMain;
+
+    void OnAdd(wxCommandEvent &event);
+};
+
+class DialogViewLink : public wxDialog
+{
+public:
+    DialogViewLink(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *linkLst;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnPrintAll;
+    wxButton *btnClose;
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnPrintAll(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
+};
+
+class DialogDelLink : public wxDialog
+{
+public:
+    DialogDelLink(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+};
+
 class DialogAddRoom : public wxDialog
 {
 public:
@@ -322,6 +381,9 @@ private:
     wxButton *buttonAddGuest;
     wxButton *btnViewGuest;
     wxButton *buttonDeleteGuest;
+    wxButton *btnAddLink;
+    wxButton *btnViewLink;
+    wxButton *btnDelLink;
     wxButton *btnAddRoom;
     wxButton *btnViewRoom;
     wxButton *btnDelRoom;
@@ -331,9 +393,11 @@ private:
     wxStaticBoxSizer *vSizerControlDB;
     wxStaticBoxSizer *vSzrControlBook;
     wxStaticBoxSizer *vSizerControlGuest;
+    wxStaticBoxSizer *vSzrControlLink;
     wxStaticBoxSizer *vSizerControlRoom;
     wxBoxSizer *vSizerTopLeft;
-    wxBoxSizer *vSizerTopRight;
+    wxGridSizer *gSizerTopRight;
+//    wxBoxSizer *vSizerTopRight;
     wxBoxSizer *hSizerTop;
     wxBoxSizer *vSizerBottomLeft;
     wxBoxSizer *vSizerBottomRight;
@@ -352,10 +416,13 @@ private:
     void OnViewBook(wxCommandEvent &event);
     void OnDeleteBook(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);
-    void OnAddRoom(wxCommandEvent &event);
     void OnViewGuest(wxCommandEvent &event);
-    void OnViewRoom(wxCommandEvent &event);
     void OnDeleteGuest(wxCommandEvent &event);
+    void OnAddLink(wxCommandEvent &event);
+    void OnViewLink(wxCommandEvent &event);
+    void OnDelLink(wxCommandEvent &event);
+    void OnAddRoom(wxCommandEvent &event);
+    void OnViewRoom(wxCommandEvent &event);
     void OnDeleteRoom(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);

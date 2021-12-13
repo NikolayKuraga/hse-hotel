@@ -38,6 +38,10 @@ bool queryDeleteGuestByName(std::string connection, std::string dbToConnect,
 bool queryDeleteGuestByPassport(std::string connection, std::string dbToConnect,
                                 std::string passport_serial, std::string passport_number);
 
+// link queries
+void queryAddLink(std::string connection, std::string dbToConnect,
+                  std::string book_id, std::string guest_id);
+
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,
                   std::string room_id, std::string price_per_day, std::string num_of_rooms,
