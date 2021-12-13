@@ -367,7 +367,47 @@ BEGIN
             USING new_room, key_val;
         END;
         $update_booked_room$ LANGUAGE plpgsql;');
-        PERFORM dblink_exec('myconn','COMMIT');
+    PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION print_full_info()
+		RETURNS TABLE(
+		guest_id INTEGER,
+		last_name VARCHAR(30),
+		first_name VARCHAR(20),
+		patronimic VARCHAR(20),
+		passport_series VARCHAR(4),
+		passport_number VARCHAR(6),
+		phone VARCHAR(10),
+		booking_id INTEGER,
+		arrival DATE,
+		departure DATE,
+		booking_date DATE,
+		hotel_room_id INTEGER,
+		total_cost NUMERIC(8, 2),
+		bank_card VARCHAR(19),
+		price_per_day NUMERIC(7, 2),
+		number_of_rooms INTEGER,
+		area INTEGER,
+		service_class VARCHAR(8),
+		kitchen BOOL) AS
+		$print_full_info$
+		BEGIN
+			RETURN QUERY SELECT guest.guest_id, guest.last_name, guest.first_name, 
+				guest.patronimic, guest.passport_series, guest.passport_number, guest.phone,
+				booking.booking_id, booking.arrival, booking.departure, booking.booking_date, 
+				booking.hotel_room_id, booking.total_cost, booking.bank_card,
+				hotel_room.price_per_day, hotel_room.number_of_rooms, hotel_room.area, 
+				hotel_room.service_class, hotel_room.kitchen
+			FROM hotel_room
+			JOIN booking
+			ON hotel_room.hotel_room_id = booking.hotel_room_id
+			JOIN booking_guest
+			ON booking.booking_id = booking_guest.booking_id
+			JOIN guest
+			ON guest.guest_id = booking_guest.guest_id;
+		END;
+		$print_full_info$ LANGUAGE plpgsql;');
+    PERFORM dblink_exec('myconn','COMMIT');
+     
 END;
 $create_db$ LANGUAGE plpgsql;
 
