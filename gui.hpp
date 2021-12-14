@@ -50,6 +50,7 @@ enum {
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
     ID_VIEW_ROOM,
+    ID_VIEW_ROOM_FIND,
     ID_VIEW_ROOM_PRINT_ALL,
     ID_VIEW_ROOM_CLOSE,
     ID_DELETE_ROOM,
@@ -335,14 +336,17 @@ public:
 private:
     std::string dbName;
     
+    wxTextCtrl *txtFldArrival;
+    wxTextCtrl *txtFldDeparture;
     wxRichTextCtrl *roomLst;
+    wxButton *btnFind;
     wxButton *btnPrintAll;
     wxButton *btnCancel;
     wxPanel *panel;
-    wxBoxSizer *hSzrBtm1;
-    wxBoxSizer *hSzrBtm2;
+    wxBoxSizer *hSzrBtm;
     wxBoxSizer *vSzrMain;
-
+    
+    void OnFind(wxCommandEvent &event);
     void OnPrintAll(wxCommandEvent &event);
     void OnClose(wxCommandEvent &event);
 };

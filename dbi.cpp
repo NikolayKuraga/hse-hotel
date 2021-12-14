@@ -148,3 +148,22 @@ void queryAddRoom(std::string connection, std::string dbToConnect,
              area + "\', \'" + service_class + "\', \'" + kitchen + "\');");
     wrk.commit();
 }
+
+std::vector<std::vector<std::string>> queryFindRooms(std::string connection, std::string dbToConnect,
+                  std::string arrival, std::string departure)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "SELECT find_free_rooms(\'" +
+             arrival + "\', \'" + departure + "\');");
+    wrk.commit();
+    std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
+        std::vector<std::string> row;
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+            row.push_back(it[column].c_str());
+        }
+        tbl.push_back(row);
+    }
+    return tbl;
+}

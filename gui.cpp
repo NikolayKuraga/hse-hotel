@@ -342,20 +342,25 @@ DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, (std::string) "Hotel Rooms (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
     roomLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    txtFldArrival = new wxTextCtrl(this, wxID_ANY, "<arrival>");
+    txtFldDeparture = new wxTextCtrl(this, wxID_ANY, "<departure>");
+    btnFind = new wxButton(this, ID_VIEW_ROOM_FIND, "Find free room");
     btnPrintAll = new wxButton(this, ID_VIEW_ROOM_PRINT_ALL, "Print all");
     btnCancel = new wxButton(this, ID_VIEW_ROOM_CLOSE, "Close");
+    Connect(ID_VIEW_ROOM_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnFind));
     Connect(ID_VIEW_ROOM_PRINT_ALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnPrintAll));
     Connect(ID_VIEW_ROOM_CLOSE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnClose));
-    hSzrBtm1 = new wxBoxSizer(wxHORIZONTAL);
-    hSzrBtm2 = new wxBoxSizer(wxHORIZONTAL);
+    hSzrBtm = new wxBoxSizer(wxHORIZONTAL);
     vSzrMain = new wxBoxSizer(wxVERTICAL);
-    
-    hSzrBtm2->Add(btnPrintAll);
-    hSzrBtm2->AddSpacer(5);
-    hSzrBtm2->Add(btnCancel);
-    vSzrMain->Add(roomLst, 1, wxEXPAND);
-    vSzrMain->Add(hSzrBtm1, 1, wxEXPAND);
-    vSzrMain->Add(hSzrBtm2, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM | wxTOP, 5) ;
+    hSzrBtm->Add(txtFldArrival, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(txtFldDeparture, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnCancel, 0, wxALL, 5);
+    vSzrMain->Add(roomLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
     SetSize(wxSize(600, 400));
@@ -381,6 +386,25 @@ void DialogViewRoom::OnPrintAll(wxCommandEvent &event)
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        roomLst->SetValue(txt);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void DialogViewRoom::OnFind(wxCommandEvent &event)
+{
+	try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryFindRooms(DF_CNN, dbName, txtFldArrival->GetValue().ToStdString(), txtFldDeparture->GetValue().ToStdString());
         std::string txt;
         for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
             for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {

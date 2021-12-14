@@ -48,5 +48,6 @@ bool queryDeleteLink(std::string connection, std::string dbToConnect,
 void queryAddRoom(std::string connection, std::string dbToConnect,
                   std::string room_id, std::string price_per_day, std::string num_of_rooms,
                   std::string area, std::string service_class, std::string kitchen);
-
+std::vector<std::vector<std::string>> queryFindRooms(std::string connection, std::string dbToConnect,
+                  std::string arrival, std::string departure);
 #endif//DBI_HPP
