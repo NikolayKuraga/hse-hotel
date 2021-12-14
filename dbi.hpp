@@ -17,7 +17,8 @@ bool queryCheckDB(std::string connection, std::string dbToConnect, std::string d
 void queryCreateDB(std::string connection, std::string dbToConnect, std::string dbToCreate);
 void queryDropDB(std::string connection, std::string dbToConnect, std::string dbToDrop);
 std::vector<std::vector<std::string>> queryPrintOverallTable(std::string connection, std::string dbToConnect);
-
+std::vector<std::vector<std::string>> queryFindBookingByName(std::string connection, std::string dbToConnect,
+                            std::string last_name, std::string first_name);
 // queries for specified table
 std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
                                                       std::string tableName);

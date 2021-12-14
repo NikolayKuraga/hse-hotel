@@ -1,20 +1,23 @@
 #include "gui.hpp"
 
-DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName) :
+DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName):
     wxDialog(parent, wxID_ANY, (std::string) "Overall table (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
     overallLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
-    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
-//    btnFind = new wxButton(this, ID_VIEW_OVERALL_FIND, "Find");
+    txtFldLstName = new wxTextCtrl(this, wxID_ANY, "<last name>");
+    txtFldFstName = new wxTextCtrl(this, wxID_ANY, "<first name>");
+    btnFind = new wxButton(this, ID_VIEW_OVERALL_FIND, "Find");
     btnPrintAll = new wxButton(this, ID_VIEW_OVERALL_PRINT_ALL, "Print All");
     btnClose = new wxButton(this, ID_VIEW_OVERALL_CLOSE, "Close");
-//    Connect(ID_VIEW_OVERALL_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnFind));
+    Connect(ID_VIEW_OVERALL_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnFind));
     Connect(ID_VIEW_OVERALL_PRINT_ALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnPrintAll));
     Connect(ID_VIEW_OVERALL_CLOSE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnClose));
     hSzrBtm = new wxBoxSizer(wxHORIZONTAL);
     vSzrMain = new wxBoxSizer(wxVERTICAL);
-    hSzrBtm->Add(sTxtEmpty, 1);
-//    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(txtFldLstName, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(txtFldFstName, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
@@ -39,12 +42,26 @@ DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName) :
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
-/*
+
 void DialogViewOverall::OnFind(wxCommandEvent &event)
 {
-    return;
+	try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryFindBookingByName(DF_CNN, dbName, txtFldLstName->GetValue().ToStdString(), txtFldFstName->GetValue().ToStdString());
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        overallLst->SetValue(txt);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
 }
-*/
+
 void DialogViewOverall::OnPrintAll(wxCommandEvent &event)
 {
     try {
@@ -959,7 +976,7 @@ DialogDeleteRoom::DialogDeleteRoom(wxWindow *parent, std::string dbName) :
     Connect(ID_DELETE_ROOM_RADIO_DELETE_ALL, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDeleteRoom::OnRadioDelAll));
     Connect(ID_DELETE_ROOM_DELETE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDeleteRoom::OnDelete));
     hSzrTxtFldID = new wxBoxSizer(wxHORIZONTAL);
-    hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
+	hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
     gSzrID = new wxGridSizer(2);
     gSzrBtm = new wxGridSizer(2);
     vSzrMain = new wxBoxSizer(wxVERTICAL);

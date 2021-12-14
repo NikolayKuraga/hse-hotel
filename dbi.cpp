@@ -43,6 +43,25 @@ std::vector<std::vector<std::string>> queryPrintOverallTable(std::string connect
     return tbl;
 }
 
+std::vector<std::vector<std::string>> queryFindBookingByName(std::string connection, std::string dbToConnect,
+                            std::string last_name, std::string first_name)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "SELECT * FROM find_guest(\'" +
+             last_name + "\', \'" + first_name + "\');");
+    wrk.commit();
+    std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
+        std::vector<std::string> row;
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+            row.push_back(it[column].c_str());
+        }
+        tbl.push_back(row);
+    }
+    return tbl;
+}
+
 // queries for specified table
 std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
                                                       std::string tableName)

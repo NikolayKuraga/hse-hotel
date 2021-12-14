@@ -17,7 +17,7 @@ enum {
     ID_CREATE_DB,
     ID_DROP_DB,
     ID_VIEW_OVERALL,
-//    ID_VIEW_OVERALL_FIND,
+    ID_VIEW_OVERALL_FIND,
     ID_VIEW_OVERALL_PRINT_ALL,
     ID_VIEW_OVERALL_CLOSE,
     ID_MODE_TEST,
@@ -74,13 +74,15 @@ private:
     std::string dbName;
 
     wxRichTextCtrl *overallLst;
-    wxStaticText *sTxtEmpty;
-//    wxButton *btnFind;
+    wxTextCtrl *txtFldLstName;
+    wxTextCtrl *txtFldFstName;
+    wxButton *btnFind;
     wxButton *btnPrintAll;
     wxButton *btnClose;
     wxBoxSizer *hSzrBtm;
     wxBoxSizer *vSzrMain;
-
+    
+    void OnFind(wxCommandEvent &event);
     void OnPrintAll(wxCommandEvent &event);
     void OnClose(wxCommandEvent &event);
 };
