@@ -45,8 +45,7 @@ enum {
     ID_VIEW_LINK_CLOSE,
     ID_DELETE_LINK,
     ID_DELETE_LINK_DELETE,
-    ID_DELETE_LINK_RADIO_GUEST_ID,
-    ID_DELETE_LINK_RADIO_BOOKING_ID,
+    ID_DELETE_LINK_RADIO_ID,
     ID_DELETE_LINK_RADIO_DELETE_ALL,
     ID_ADD_ROOM,
     ID_ADD_ROOM_ADD,
@@ -276,6 +275,25 @@ public:
 
 private:
     std::string dbName;
+    int radio;
+    
+    wxRadioButton *rBtnID;
+    wxRadioButton *rBtnDelAll;
+    wxStaticText *sTxtEmpty;
+    wxTextCtrl *txtFldBookingID;
+    wxTextCtrl *txtFldGuestID;
+    wxButton *btnDel;
+    wxButton *btnCancel;
+
+    wxBoxSizer *hSzrTxtFldID;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrID;
+    wxGridSizer *gSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnRadioID(wxCommandEvent &event);
+    void OnRadioDelAll(wxCommandEvent &event);
+    void OnDelete(wxCommandEvent &event);
 };
 
 class DialogAddRoom : public wxDialog

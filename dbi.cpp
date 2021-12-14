@@ -125,6 +125,17 @@ void queryAddLink(std::string connection, std::string dbToConnect,
     wrk.commit();
 }
 
+bool queryDeleteLink(std::string connection, std::string dbToConnect,
+                  std::string book_id, std::string guest_id)
+{
+    pqxx::connection cnn(connection + " dbname = " + dbToConnect);
+    pqxx::work wrk(cnn);
+    pqxx::result r = wrk.exec((std::string) "SELECT delete_booking_guest(\'" +
+             book_id + "\', '" + guest_id + "\');");
+    wrk.commit();
+    return r.begin()[0].as<bool>();
+}
+
 // room queries
 void queryAddRoom(std::string connection, std::string dbToConnect,
                   std::string room_id, std::string price_per_day, std::string num_of_rooms,

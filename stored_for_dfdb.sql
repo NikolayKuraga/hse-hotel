@@ -273,6 +273,34 @@ BEGIN
             END IF;
         END;
         $delete_guest_by_name$ LANGUAGE plpgsql;');
+    
+    /* The function delete_booking_guest() returns TRUE, if the deletion was successfull.
+	Otherwise (if the table had been empty before the deletion) it returns FALSE.
+	Example of how it should be called:
+	SELECT delete_booking_guest(3, 5);
+	Here 3 is a booking id, 5 is a guest id.*/
+	PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION delete_booking_guest(
+		v_booking_id INTEGER, v_guest_id INTEGER)
+		RETURNS BOOL AS
+		$delete_booking_guest$
+		DECLARE
+		success BOOL;
+		BEGIN
+			EXECUTE format(''DELETE FROM booking_guest
+				WHERE booking_guest.booking_id = $1 AND
+				booking_guest.guest_id = $2
+				RETURNING TRUE'')
+			USING v_booking_id, v_guest_id
+			INTO success;
+			IF success IS TRUE
+			THEN
+				RETURN TRUE;
+			ELSE
+				RETURN FALSE;
+			END IF;
+		END;
+		$delete_booking_guest$ LANGUAGE plpgsql;');
 
     /* The function delete_guest_by_passport() returns TRUE, if the deletion was successfull.
     Otherwise it returns FALSE.

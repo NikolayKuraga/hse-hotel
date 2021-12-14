@@ -669,7 +669,82 @@ void DialogViewLink::OnClose(wxCommandEvent &event)
 DialogDelLink::DialogDelLink(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, "Unlink guest with booking"), dbName(dbName)
 {
-//    radio = ID_DELETE_LINK_RADIO_
+	radio = ID_DELETE_LINK_RADIO_ID;
+    rBtnID = new wxRadioButton(this, ID_DELETE_LINK_RADIO_ID, "Delete the link by the booking ID and the guest ID:");
+    rBtnDelAll = new wxRadioButton(this, ID_DELETE_LINK_RADIO_DELETE_ALL, "Delete all links (clear the table)");
+    txtFldBookingID = new wxTextCtrl(this, wxID_ANY, "<booking ID>");
+    txtFldGuestID = new wxTextCtrl(this, wxID_ANY, "<guest ID>");
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    btnDel = new wxButton(this, ID_DELETE_LINK_DELETE, "Delete");
+    btnCancel = new wxButton(this, wxID_OK, "Cancel");
+    Connect(ID_DELETE_LINK_RADIO_ID, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDelLink::OnRadioID));
+    Connect(ID_DELETE_LINK_RADIO_DELETE_ALL, wxEVT_RADIOBUTTON, wxCommandEventHandler(DialogDelLink::OnRadioDelAll));
+    Connect(ID_DELETE_LINK_DELETE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogDelLink::OnDelete));
+    hSzrTxtFldID = new wxBoxSizer(wxHORIZONTAL);
+    hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
+    gSzrID = new wxGridSizer(2);
+    gSzrBtm = new wxGridSizer(2);
+    vSzrMain = new wxBoxSizer(wxVERTICAL);
+    hSzrTxtFldID->Add(txtFldBookingID, 1, wxLEFT | wxRIGHT, 5);
+    hSzrTxtFldID->Add(txtFldGuestID, 1, wxLEFT | wxRIGHT, 5);
+    gSzrID->Add(rBtnID, 0, wxEXPAND | wxTOP, 5);
+    gSzrID->Add(hSzrTxtFldID, 0, wxEXPAND | wxTOP, 5);
+    hSzrBtns->Add(btnDel, 1, wxLEFT, 5);
+    hSzrBtns->Add(btnCancel, 1, wxLEFT | wxRIGHT, 5);
+    gSzrBtm->Add(sTxtEmpty, 0, wxTOP | wxBOTTOM, 5);
+    gSzrBtm->Add(hSzrBtns, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    vSzrMain->Add(gSzrID, 0, wxEXPAND, 0);
+    vSzrMain->Add(rBtnDelAll, 0, wxEXPAND | wxTOP, 5);
+    vSzrMain->Add(gSzrBtm, 0, wxEXPAND, 0);
+    SetSizerAndFit(vSzrMain);
+}
+
+void DialogDelLink::OnDelete(wxCommandEvent &event)
+{
+	std::cout << "deleting links\n";
+	bool info = false;
+    try {
+        if(radio == ID_DELETE_LINK_RADIO_ID) {
+			std::cout << "deleting by id\n";
+            info = queryDeleteLink(DF_CNN, dbName, txtFldBookingID->GetValue().ToStdString(), txtFldGuestID->GetValue().ToStdString());
+            if(info == true) {
+                wxMessageBox("The link was deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_LINK_DELETE);
+            }
+            else {
+                wxMessageBox("There is no such a link!\nNothing was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
+        }
+        else if(radio == ID_DELETE_LINK_RADIO_DELETE_ALL) {
+			std::cout << "deleting all\n";
+            info = queryClearTable(DF_CNN, dbName, "booking_guest");
+            if(info == true) {
+                wxMessageBox("All links have been deleted!", "Success!", wxOK | wxCENTRE);
+                EndModal(ID_DELETE_LINK_DELETE);
+            }
+            else {
+                wxMessageBox("There are already no links in this table!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+            }
+        }
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error", wxOK | wxCENTRE | wxICON_ERROR);
+        return;
+    }
+}
+
+void DialogDelLink::OnRadioID(wxCommandEvent &event)
+{
+    radio = ID_DELETE_LINK_RADIO_ID;
+    txtFldBookingID->Enable(true);
+    txtFldGuestID->Enable(true);
+}
+
+void DialogDelLink::OnRadioDelAll(wxCommandEvent &event)
+{
+    radio = ID_DELETE_LINK_RADIO_DELETE_ALL;
+    txtFldBookingID->Enable(false);
+    txtFldGuestID->Enable(false);
 }
 
 DialogDeleteRoom::DialogDeleteRoom(wxWindow *parent, std::string dbName) :
