@@ -149,17 +149,23 @@ DialogEditBook::DialogEditBook(wxWindow *parent, std::string dbName) :
 
 void DialogEditBook::OnApply(wxCommandEvent &event)
 {
-    try {
-        queryEditBook(DF_CNN, dbName,
+   bool info = false;
+   try {
+        info = queryEditBook(DF_CNN, dbName,
                       txtFldBookID->GetValue().ToStdString(),
                       txtFldRoomID->GetValue().ToStdString());
-        wxMessageBox("Applied!", "Success!", wxOK | wxCENTRE);
+        if (info == true){
+			wxMessageBox("Applied!", "Success!", wxOK | wxCENTRE);
+			EndModal(ID_EDIT_BOOKING);
+		}
+		else {
+			wxMessageBox("No update has happened!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+		}
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
         return;
     }
-    EndModal(ID_ADD_GUEST_ADD);
 }
 
 DialogViewBook::DialogViewBook(wxWindow *parent, std::string dbName) :

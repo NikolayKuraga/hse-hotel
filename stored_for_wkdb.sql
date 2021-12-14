@@ -351,18 +351,37 @@ CREATE OR REPLACE FUNCTION clear_table(_tbl regclass)
     END;
     $clear_table$ LANGUAGE plpgsql;
 
-/* Example of how the function update_booked_room() should be called:
-SELECT update_booked_room(2, 1);
-2 - the booking id
-1 - the number of a new room*/
+
 CREATE OR REPLACE FUNCTION update_booked_room(key_val INTEGER, new_room INTEGER)
-    RETURNS VOID AS
+    RETURNS BOOL AS
     $update_booked_room$
+    DECLARE
+    booking_exists BOOL;
+    unchanged BOOL;
     BEGIN
-        EXECUTE format('UPDATE booking
-            SET hotel_room_id = $1
-            WHERE booking_id = $2')
-        USING new_room, key_val;
+		EXECUTE format('SELECT EXISTS (
+			SELECT 1 FROM booking
+			WHERE booking_id = $1)')
+			USING key_val INTO booking_exists;
+		IF booking_exists
+		THEN
+			EXECUTE format('SELECT EXISTS (
+				SELECT 1 FROM booking
+				WHERE booking_id = $1 AND hotel_room_id = $2)')
+			USING key_val, new_room INTO unchanged;
+			IF unchanged
+			THEN
+				RETURN FALSE;
+			ELSE
+				EXECUTE format('UPDATE booking
+					SET hotel_room_id = $1
+					WHERE booking_id = $2;')
+				USING new_room, key_val;
+				RETURN TRUE;
+			END IF;
+		ELSE
+			RAISE EXCEPTION 'A booking with such an ID does not exist!';
+		END IF;                                                      
     END;
     $update_booked_room$ LANGUAGE plpgsql;
 

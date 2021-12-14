@@ -96,14 +96,15 @@ void queryAddBook(std::string connection, std::string dbToConnect,
     wrk.commit();
 }
 
-void queryEditBook(std::string connection, std::string dbToConnect,
+bool queryEditBook(std::string connection, std::string dbToConnect,
                    std::string book_id, std::string room_id)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-    wrk.exec((std::string) "SELECT update_booked_room(\'" +
+    pqxx::result r = wrk.exec((std::string) "SELECT update_booked_room(\'" +
              book_id + "\', \'" + room_id + "\');");
     wrk.commit();
+    return r.begin()[0].as<bool>();
 }
 
 // guest queries

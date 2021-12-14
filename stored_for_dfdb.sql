@@ -434,6 +434,39 @@ BEGIN
 			ON guest.guest_id = booking_guest.guest_id;
 		END;
 		$print_full_info$ LANGUAGE plpgsql;');
+	PERFORM dblink_exec('myconn',
+        'CREATE OR REPLACE FUNCTION update_booked_room(key_val INTEGER, new_room INTEGER)
+		RETURNS BOOL AS
+		$update_booked_room$
+		DECLARE
+		booking_exists BOOL;
+		unchanged BOOL;
+		BEGIN
+			EXECUTE format(''SELECT EXISTS (
+				SELECT 1 FROM booking
+				WHERE booking_id = $1)'')
+				USING key_val INTO booking_exists;
+			IF booking_exists
+			THEN
+				EXECUTE format(''SELECT EXISTS (
+					SELECT 1 FROM booking
+					WHERE booking_id = $1 AND hotel_room_id = $2)'')
+				USING key_val, new_room INTO unchanged;
+				IF unchanged
+				THEN
+					RETURN FALSE;
+				ELSE
+					EXECUTE format(''UPDATE booking
+						SET hotel_room_id = $1
+						WHERE booking_id = $2;'')
+					USING new_room, key_val;
+					RETURN TRUE;
+				END IF;
+			ELSE
+				RAISE EXCEPTION ''A booking with such an ID does not exist!'';
+			END IF;                                                      
+		END;
+		$update_booked_room$ LANGUAGE plpgsql;');
     PERFORM dblink_exec('myconn','COMMIT');
      
 END;
