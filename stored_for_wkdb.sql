@@ -107,12 +107,17 @@ CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
     kitchen BOOL) AS
     $find_free_rooms$
     BEGIN
-        RETURN QUERY SELECT * FROM hotel_room AS r
-            WHERE r.hotel_room_id NOT IN
-            (SELECT b.hotel_room_id
-            FROM booking AS b
-            WHERE (arr::DATE, dep::DATE)
-            OVERLAPS (b.arrival, b.departure));
+		IF arr::DATE < dep::DATE
+		THEN
+			RETURN QUERY SELECT * FROM hotel_room AS r
+				WHERE r.hotel_room_id NOT IN
+				(SELECT b.hotel_room_id
+				FROM booking AS b
+				WHERE (arr::DATE, dep::DATE)
+				OVERLAPS (b.arrival, b.departure));
+		ELSE
+			RAISE EXCEPTION 'The arrival date must be earlier than the departure date!';
+		END IF;
     END;
     $find_free_rooms$ LANGUAGE plpgsql;
         

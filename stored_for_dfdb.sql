@@ -125,22 +125,27 @@ BEGIN
          'CREATE INDEX guest_name ON guest(last_name, first_name, patronimic)');
     PERFORM dblink_exec('myconn',
          'CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
-            hotel_room_id INTEGER,
-            price_per_day NUMERIC(7, 2),
-            number_of_rooms INTEGER,
-            area INTEGER,
-            service_class VARCHAR(8),
-            kitchen BOOL) AS
-        $find_free_rooms$
-        BEGIN
-            RETURN QUERY SELECT * FROM hotel_room AS r
-                WHERE r.hotel_room_id NOT IN
-                (SELECT b.hotel_room_id
-                FROM booking AS b
-                WHERE (arr::DATE, dep::DATE)
-                OVERLAPS (b.arrival, b.departure));
-        END;
-        $find_free_rooms$ LANGUAGE plpgsql');
+		hotel_room_id INTEGER,
+		price_per_day NUMERIC(7, 2),
+		number_of_rooms INTEGER,
+		area INTEGER,
+		service_class VARCHAR(8),
+		kitchen BOOL) AS
+		$find_free_rooms$
+		BEGIN
+			IF arr::DATE < dep::DATE
+			THEN
+				RETURN QUERY SELECT * FROM hotel_room AS r
+					WHERE r.hotel_room_id NOT IN
+					(SELECT b.hotel_room_id
+					FROM booking AS b
+					WHERE (arr::DATE, dep::DATE)
+					OVERLAPS (b.arrival, b.departure));
+			ELSE
+				RAISE EXCEPTION ''The arrival date must be earlier than the departure date!'';
+			END IF;
+		END;
+		$find_free_rooms$ LANGUAGE plpgsql;');
     PERFORM dblink_exec('myconn',
          'CREATE OR REPLACE FUNCTION find_guest(
             lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS TABLE(
@@ -379,22 +384,6 @@ BEGIN
             END IF;
         END;
         $clear_table$ LANGUAGE plpgsql;');
-    
-    /* Example of how the function update_booked_room() should be called:
-    SELECT update_booked_room(2, 1);
-    2 - the booking id
-    1 - the number of a new room*/
-    PERFORM dblink_exec('myconn',
-        'CREATE OR REPLACE FUNCTION update_booked_room(key_val INTEGER, new_room INTEGER)
-        RETURNS VOID AS
-        $update_booked_room$
-        BEGIN
-            EXECUTE format(''UPDATE booking
-                SET hotel_room_id = $1
-                WHERE booking_id = $2'')
-            USING new_room, key_val;
-        END;
-        $update_booked_room$ LANGUAGE plpgsql;');
     PERFORM dblink_exec('myconn',
         'CREATE OR REPLACE FUNCTION print_full_info()
 		RETURNS TABLE(
