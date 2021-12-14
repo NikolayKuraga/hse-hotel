@@ -16,6 +16,7 @@
 bool queryCheckDB(std::string connection, std::string dbToConnect, std::string dbToCheck);
 void queryCreateDB(std::string connection, std::string dbToConnect, std::string dbToCreate);
 void queryDropDB(std::string connection, std::string dbToConnect, std::string dbToDrop);
+std::vector<std::vector<std::string>> queryPrintOverallTable(std::string connection, std::string dbToConnect);
 
 // queries for specified table
 std::vector<std::vector<std::string>> queryPrintTable(std::string connection, std::string dbToConnect,
@@ -28,6 +29,8 @@ bool queryClearTable(std::string connection, std::string dbToConnect, std::strin
 void queryAddBook(std::string connection, std::string dbToConnect,
                   std::string arrival, std::string departure, std::string date,
                   std::string room, std::string card);
+void queryEditBook(std::string connection, std::string dbToConnect,
+                   std::string book_id, std::string room_id);
 
 // guest queries
 void queryAddGuest(std::string connection, std::string dbToConnect,

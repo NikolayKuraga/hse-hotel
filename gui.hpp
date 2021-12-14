@@ -7,7 +7,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.13"
+#define VERSION   "2021.12.14"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -16,9 +16,15 @@ enum {
     ID_CHECK_DB,
     ID_CREATE_DB,
     ID_DROP_DB,
+    ID_VIEW_OVERALL,
+//    ID_VIEW_OVERALL_FIND,
+    ID_VIEW_OVERALL_PRINT_ALL,
+    ID_VIEW_OVERALL_CLOSE,
     ID_MODE_TEST,
     ID_ADD_BOOKING,
     ID_ADD_BOOKING_ADD,
+    ID_EDIT_BOOKING,
+    ID_EDIT_BOOKING_APPLY,
     ID_VIEW_BOOKING,
     ID_VIEW_BOOKING_PRINT_ALL,
     ID_VIEW_BOOKING_CLOSE,
@@ -59,6 +65,26 @@ enum {
     ID_DELETE_ROOM_RADIO_DELETE_ALL
 };
 
+class DialogViewOverall : public wxDialog
+{
+public:
+    DialogViewOverall(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxRichTextCtrl *overallLst;
+    wxStaticText *sTxtEmpty;
+//    wxButton *btnFind;
+    wxButton *btnPrintAll;
+    wxButton *btnClose;
+    wxBoxSizer *hSzrBtm;
+    wxBoxSizer *vSzrMain;
+
+    void OnPrintAll(wxCommandEvent &event);
+    void OnClose(wxCommandEvent &event);
+};
+
 class DialogAddBook : public wxDialog
 {
 public:
@@ -84,6 +110,27 @@ private:
     wxGridSizer *gSzrMain;
 
     void OnAdd(wxCommandEvent &event);
+};
+
+class DialogEditBook : public wxDialog
+{
+public:
+    DialogEditBook(wxWindow *parent, std::string dbName);
+
+private:
+    std::string dbName;
+
+    wxTextCtrl *txtFldBookID;
+    wxTextCtrl *txtFldRoomID;
+    wxStaticText *sTxtEmpty;
+    wxButton *btnApply;
+    wxButton *btnCancel;
+    wxBoxSizer *hSzrFldBookID;
+    wxBoxSizer *hSzrFldRoomID;
+    wxBoxSizer *hSzrBtns;
+    wxGridSizer *gSzrMain;
+
+    void OnApply(wxCommandEvent &event);
 };
 
 class DialogViewBook : public wxDialog
@@ -396,8 +443,10 @@ private:
     wxButton *buttonCreateDB;
     wxButton *buttonDropDB;
     wxButton *buttonCheckDB;
+    wxButton *btnViewOverall;
     wxButton *buttonModeTest;
     wxButton *btnAddBook;
+    wxButton *btnEditBook;
     wxButton *btnViewBook;
     wxButton *btnDelBook;
     wxButton *buttonAddGuest;
@@ -419,7 +468,6 @@ private:
     wxStaticBoxSizer *vSizerControlRoom;
     wxBoxSizer *vSizerTopLeft;
     wxGridSizer *gSizerTopRight;
-//    wxBoxSizer *vSizerTopRight;
     wxBoxSizer *hSizerTop;
     wxBoxSizer *vSizerBottomLeft;
     wxBoxSizer *vSizerBottomRight;
@@ -433,8 +481,10 @@ private:
     void OnCreateDB(wxCommandEvent &event);
     void OnDropDB(wxCommandEvent &event);
     void OnCheckDB(wxCommandEvent &event);
+    void OnViewOverall(wxCommandEvent &event);
     void OnModeTest(wxCommandEvent &event);
     void OnAddBook(wxCommandEvent &event);
+    void OnEditBook(wxCommandEvent &event);
     void OnViewBook(wxCommandEvent &event);
     void OnDeleteBook(wxCommandEvent &event);
     void OnAddGuest(wxCommandEvent &event);

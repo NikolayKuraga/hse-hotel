@@ -1,5 +1,74 @@
 #include "gui.hpp"
 
+DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName) :
+    wxDialog(parent, wxID_ANY, (std::string) "Overall table (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
+{
+    overallLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+//    btnFind = new wxButton(this, ID_VIEW_OVERALL_FIND, "Find");
+    btnPrintAll = new wxButton(this, ID_VIEW_OVERALL_PRINT_ALL, "Print All");
+    btnClose = new wxButton(this, ID_VIEW_OVERALL_CLOSE, "Close");
+//    Connect(ID_VIEW_OVERALL_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnFind));
+    Connect(ID_VIEW_OVERALL_PRINT_ALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnPrintAll));
+    Connect(ID_VIEW_OVERALL_CLOSE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewOverall::OnClose));
+    hSzrBtm = new wxBoxSizer(wxHORIZONTAL);
+    vSzrMain = new wxBoxSizer(wxVERTICAL);
+    hSzrBtm->Add(sTxtEmpty, 1);
+//    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
+    vSzrMain->Add(overallLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
+    SetSizer(vSzrMain);
+    SetMinSize(wxSize(520, 400));
+    SetSize(wxSize(600, 400));
+    try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryPrintOverallTable(DF_CNN, dbName);
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        overallLst->SetValue(txt);
+    }
+    catch (const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+/*
+void DialogViewOverall::OnFind(wxCommandEvent &event)
+{
+    return;
+}
+*/
+void DialogViewOverall::OnPrintAll(wxCommandEvent &event)
+{
+    try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryPrintOverallTable(DF_CNN, dbName);
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        overallLst->SetValue(txt);
+    }
+    catch (const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void DialogViewOverall::OnClose(wxCommandEvent &event)
+{
+    Destroy();
+}
+
 DialogAddBook::DialogAddBook(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, "Add booking"), dbName(dbName)
 {
@@ -45,6 +114,46 @@ void DialogAddBook::OnAdd(wxCommandEvent &event)
                      txtFldRoom->GetValue().ToStdString(),
                      txtFldCard->GetValue().ToStdString());
         wxMessageBox((std::string) "Added!", "Success!", wxOK | wxCENTRE);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        return;
+    }
+    EndModal(ID_ADD_GUEST_ADD);
+}
+
+DialogEditBook::DialogEditBook(wxWindow *parent, std::string dbName) :
+    wxDialog(parent, wxID_ANY, "Edit book"), dbName(dbName)
+{
+    txtFldBookID = new wxTextCtrl(this, wxID_ANY, "<booking ID>");
+    txtFldRoomID = new wxTextCtrl(this, wxID_ANY, "<room number>");
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    btnApply = new wxButton(this, ID_EDIT_BOOKING_APPLY, "Apply");
+    btnCancel = new wxButton(this, wxID_OK, "Cancel");
+    Connect(ID_EDIT_BOOKING_APPLY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogEditBook::OnApply));
+    hSzrFldBookID = new wxBoxSizer(wxHORIZONTAL);
+    hSzrFldRoomID = new wxBoxSizer(wxHORIZONTAL);
+    hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
+    gSzrMain = new wxGridSizer(2);
+    hSzrFldBookID->Add(txtFldBookID, 1, wxLEFT, 5);
+    hSzrFldRoomID->Add(txtFldRoomID, 1, wxLEFT | wxRIGHT, 5);
+    hSzrBtns->Add(btnApply, 1, wxLEFT, 5);
+    hSzrBtns->Add(btnCancel, 1, wxLEFT | wxRIGHT, 5);
+    gSzrMain->Add(hSzrFldBookID, 0, wxEXPAND | wxTOP, 5);
+    gSzrMain->Add(hSzrFldRoomID, 0, wxEXPAND | wxTOP, 5);
+    gSzrMain->Add(sTxtEmpty, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    gSzrMain->Add(hSzrBtns, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    SetSizerAndFit(gSzrMain);
+    txtFldBookID->SetFocus();
+}
+
+void DialogEditBook::OnApply(wxCommandEvent &event)
+{
+    try {
+        queryEditBook(DF_CNN, dbName,
+                      txtFldBookID->GetValue().ToStdString(),
+                      txtFldRoomID->GetValue().ToStdString());
+        wxMessageBox("Applied!", "Success!", wxOK | wxCENTRE);
     }
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
@@ -336,92 +445,6 @@ void DialogViewGuest::OnPrintAll(wxCommandEvent &event)
     catch(const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
-}
-
-DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
-    wxDialog(parent, wxID_ANY, (std::string) "Hotel Rooms (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
-{
-    roomLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
-    txtFldArrival = new wxTextCtrl(this, wxID_ANY, "<arrival>");
-    txtFldDeparture = new wxTextCtrl(this, wxID_ANY, "<departure>");
-    btnFind = new wxButton(this, ID_VIEW_ROOM_FIND, "Find free room");
-    btnPrintAll = new wxButton(this, ID_VIEW_ROOM_PRINT_ALL, "Print all");
-    btnCancel = new wxButton(this, ID_VIEW_ROOM_CLOSE, "Close");
-    Connect(ID_VIEW_ROOM_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnFind));
-    Connect(ID_VIEW_ROOM_PRINT_ALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnPrintAll));
-    Connect(ID_VIEW_ROOM_CLOSE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnClose));
-    hSzrBtm = new wxBoxSizer(wxHORIZONTAL);
-    vSzrMain = new wxBoxSizer(wxVERTICAL);
-    hSzrBtm->Add(txtFldArrival, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
-    hSzrBtm->Add(txtFldDeparture, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
-    hSzrBtm->AddSpacer(20);
-    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
-    hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
-    hSzrBtm->AddSpacer(20);
-    hSzrBtm->Add(btnCancel, 0, wxALL, 5);
-    vSzrMain->Add(roomLst, 1, wxEXPAND, 0);
-    vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
-    SetSizer(vSzrMain);
-    SetMinSize(wxSize(520, 400));
-    SetSize(wxSize(600, 400));
-    try {
-        std::vector<std::vector<std::string>> tbl;
-        tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
-        }
-        roomLst->SetValue(txt);
-    }
-    catch(const std::exception &e) {
-        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
-    }
-}
-
-void DialogViewRoom::OnPrintAll(wxCommandEvent &event)
-{
-    try {
-        std::vector<std::vector<std::string>> tbl;
-        tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
-        }
-        roomLst->SetValue(txt);
-    }
-    catch(const std::exception &e) {
-        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
-    }
-}
-
-void DialogViewRoom::OnFind(wxCommandEvent &event)
-{
-	try {
-        std::vector<std::vector<std::string>> tbl;
-        tbl = queryFindRooms(DF_CNN, dbName, txtFldArrival->GetValue().ToStdString(), txtFldDeparture->GetValue().ToStdString());
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
-        }
-        roomLst->SetValue(txt);
-    }
-    catch(const std::exception &e) {
-        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
-    }
-}
-
-void DialogViewRoom::OnClose(wxCommandEvent &event)
-{
-    Destroy();
 }
 
 void DialogViewGuest::OnClose(wxCommandEvent &event)
@@ -725,11 +748,9 @@ DialogDelLink::DialogDelLink(wxWindow *parent, std::string dbName) :
 
 void DialogDelLink::OnDelete(wxCommandEvent &event)
 {
-	std::cout << "deleting links\n";
 	bool info = false;
     try {
         if(radio == ID_DELETE_LINK_RADIO_ID) {
-			std::cout << "deleting by id\n";
             info = queryDeleteLink(DF_CNN, dbName, txtFldBookingID->GetValue().ToStdString(), txtFldGuestID->GetValue().ToStdString());
             if(info == true) {
                 wxMessageBox("The link was deleted!", "Success!", wxOK | wxCENTRE);
@@ -740,7 +761,6 @@ void DialogDelLink::OnDelete(wxCommandEvent &event)
             }
         }
         else if(radio == ID_DELETE_LINK_RADIO_DELETE_ALL) {
-			std::cout << "deleting all\n";
             info = queryClearTable(DF_CNN, dbName, "booking_guest");
             if(info == true) {
                 wxMessageBox("All links have been deleted!", "Success!", wxOK | wxCENTRE);
@@ -769,6 +789,154 @@ void DialogDelLink::OnRadioDelAll(wxCommandEvent &event)
     radio = ID_DELETE_LINK_RADIO_DELETE_ALL;
     txtFldBookingID->Enable(false);
     txtFldGuestID->Enable(false);
+}
+
+DialogAddRoom::DialogAddRoom(wxWindow *parent, std::string dbName) :
+    wxDialog(parent, wxID_ANY, "Add hotel room"), dbName(dbName)
+{
+    textFieldRoomId = new wxTextCtrl(this, wxID_ANY, "<hotel room id>");
+    textFieldPrice = new wxTextCtrl(this, wxID_ANY, "<price per day>");
+    textFieldNumberOfRooms = new wxTextCtrl(this, wxID_ANY, "<number of rooms>");
+    textFieldArea = new wxTextCtrl(this, wxID_ANY, "<area>");
+    textFieldServiceClass = new wxTextCtrl(this, wxID_ANY, "<service class>");
+    textFieldKitchen = new wxTextCtrl(this, wxID_ANY, "<kitchen>");
+    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    buttonAdd = new wxButton(this, ID_ADD_ROOM_ADD, "Add");
+    buttonCancel = new wxButton(this, wxID_OK, "Cancel");
+    Connect(ID_ADD_ROOM_ADD, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogAddRoom::OnAdd));
+    hSizerRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowFstRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSndLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSndRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowTrdLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowTrdRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowFthLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowFthRight = new wxBoxSizer(wxHORIZONTAL);
+    gSizerMain = new wxGridSizer(2);
+    hSizerRowFstLeft->Add(textFieldRoomId, 1, wxTOP | wxLEFT, 5);
+    hSizerRowFstRight->Add(textFieldPrice, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowSndLeft->Add(textFieldNumberOfRooms, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowSndRight->Add(textFieldArea, 1, wxTOP | wxLEFT, 5);
+    hSizerRowTrdLeft->Add(textFieldServiceClass, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowTrdRight->Add(textFieldKitchen, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowFthLeft->Add(sTxtEmpty, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowFthRight->Add(buttonAdd, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowFthRight->Add(buttonCancel, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    gSizerMain->Add(hSizerRowFstLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowFstRight, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSndLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSndRight, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowTrdLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowTrdRight, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowFthLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowFthRight, 0, wxEXPAND, 0);
+    SetSizer(gSizerMain);
+    SetSize(wxSize(400, 188));
+}
+
+void DialogAddRoom::OnAdd(wxCommandEvent &event)
+{
+    try {
+        queryAddRoom(DF_CNN, dbName,
+                      textFieldRoomId->GetValue().ToStdString(),
+                      textFieldPrice->GetValue().ToStdString(),
+                      textFieldNumberOfRooms->GetValue().ToStdString(),
+                      textFieldArea->GetValue().ToStdString(),
+                      textFieldServiceClass->GetValue().ToStdString(),
+                      textFieldKitchen->GetValue().ToStdString());
+        wxMessageBox((std::string) "Added!", "Success!", wxOK | wxCENTRE);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+        return;
+    }
+    EndModal(ID_ADD_ROOM_ADD);
+}
+
+DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
+    wxDialog(parent, wxID_ANY, (std::string) "Hotel Rooms (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
+{
+    roomLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    txtFldArrival = new wxTextCtrl(this, wxID_ANY, "<arrival>");
+    txtFldDeparture = new wxTextCtrl(this, wxID_ANY, "<departure>");
+    btnFind = new wxButton(this, ID_VIEW_ROOM_FIND, "Find free room");
+    btnPrintAll = new wxButton(this, ID_VIEW_ROOM_PRINT_ALL, "Print all");
+    btnCancel = new wxButton(this, ID_VIEW_ROOM_CLOSE, "Close");
+    Connect(ID_VIEW_ROOM_FIND, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnFind));
+    Connect(ID_VIEW_ROOM_PRINT_ALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnPrintAll));
+    Connect(ID_VIEW_ROOM_CLOSE, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogViewRoom::OnClose));
+    hSzrBtm = new wxBoxSizer(wxHORIZONTAL);
+    vSzrMain = new wxBoxSizer(wxVERTICAL);
+    hSzrBtm->Add(txtFldArrival, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(txtFldDeparture, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnFind, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
+    hSzrBtm->AddSpacer(20);
+    hSzrBtm->Add(btnCancel, 0, wxALL, 5);
+    vSzrMain->Add(roomLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
+    SetSizer(vSzrMain);
+    SetMinSize(wxSize(520, 400));
+    SetSize(wxSize(600, 400));
+    try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        roomLst->SetValue(txt);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void DialogViewRoom::OnFind(wxCommandEvent &event)
+{
+	try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryFindRooms(DF_CNN, dbName, txtFldArrival->GetValue().ToStdString(), txtFldDeparture->GetValue().ToStdString());
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        roomLst->SetValue(txt);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void DialogViewRoom::OnPrintAll(wxCommandEvent &event)
+{
+    try {
+        std::vector<std::vector<std::string>> tbl;
+        tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
+        std::string txt;
+        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+                txt += *jt + ' ';
+            }
+            txt += '\n';
+        }
+        roomLst->SetValue(txt);
+    }
+    catch(const std::exception &e) {
+        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
+    }
+}
+
+void DialogViewRoom::OnClose(wxCommandEvent &event)
+{
+    Destroy();
 }
 
 DialogDeleteRoom::DialogDeleteRoom(wxWindow *parent, std::string dbName) :
@@ -846,68 +1014,6 @@ void DialogDeleteRoom::OnDelete(wxCommandEvent &event)
     }
 }
 
-DialogAddRoom::DialogAddRoom(wxWindow *parent, std::string dbName) :
-    wxDialog(parent, wxID_ANY, "Add hotel room"), dbName(dbName)
-{
-    textFieldRoomId = new wxTextCtrl(this, wxID_ANY, "<hotel room id>");
-    textFieldPrice = new wxTextCtrl(this, wxID_ANY, "<price per day>");
-    textFieldNumberOfRooms = new wxTextCtrl(this, wxID_ANY, "<number of rooms>");
-    textFieldArea = new wxTextCtrl(this, wxID_ANY, "<area>");
-    textFieldServiceClass = new wxTextCtrl(this, wxID_ANY, "<service class>");
-    textFieldKitchen = new wxTextCtrl(this, wxID_ANY, "<kitchen>");
-    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    buttonAdd = new wxButton(this, ID_ADD_ROOM_ADD, "Add");
-    buttonCancel = new wxButton(this, wxID_OK, "Cancel");
-    Connect(ID_ADD_ROOM_ADD, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogAddRoom::OnAdd));
-    hSizerRowFstLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowFstRight = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowSndLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowSndRight = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowTrdLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowTrdRight = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowFthLeft = new wxBoxSizer(wxHORIZONTAL);
-    hSizerRowFthRight = new wxBoxSizer(wxHORIZONTAL);
-    gSizerMain = new wxGridSizer(2);
-    hSizerRowFstLeft->Add(textFieldRoomId, 1, wxTOP | wxLEFT, 5);
-    hSizerRowFstRight->Add(textFieldPrice, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowSndLeft->Add(textFieldNumberOfRooms, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowSndRight->Add(textFieldArea, 1, wxTOP | wxLEFT, 5);
-    hSizerRowTrdLeft->Add(textFieldServiceClass, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowTrdRight->Add(textFieldKitchen, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthLeft->Add(sTxtEmpty, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthRight->Add(buttonAdd, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthRight->Add(buttonCancel, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    gSizerMain->Add(hSizerRowFstLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowFstRight, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowSndLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowSndRight, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowTrdLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowTrdRight, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowFthLeft, 0, wxEXPAND, 0);
-    gSizerMain->Add(hSizerRowFthRight, 0, wxEXPAND, 0);
-    SetSizer(gSizerMain);
-    SetSize(wxSize(400, 188));
-}
-
-void DialogAddRoom::OnAdd(wxCommandEvent &event)
-{
-    try {
-        queryAddRoom(DF_CNN, dbName,
-                      textFieldRoomId->GetValue().ToStdString(),
-                      textFieldPrice->GetValue().ToStdString(),
-                      textFieldNumberOfRooms->GetValue().ToStdString(),
-                      textFieldArea->GetValue().ToStdString(),
-                      textFieldServiceClass->GetValue().ToStdString(),
-                      textFieldKitchen->GetValue().ToStdString());
-        wxMessageBox((std::string) "Added!", "Success!", wxOK | wxCENTRE);
-    }
-    catch(const std::exception &e) {
-        wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
-        return;
-    }
-    EndModal(ID_ADD_ROOM_ADD);
-}
-
 FrameMenu::FrameMenu() :
     wxFrame(NULL, wxID_ANY, "HSE Hotel Client")
 {
@@ -921,8 +1027,10 @@ FrameMenu::FrameMenu() :
     buttonCheckDB = new wxButton(panelTopLeft, ID_CHECK_DB, "Check");
     buttonCreateDB = new wxButton(panelTopLeft, ID_CREATE_DB, "Create");
     buttonDropDB = new wxButton(panelTopLeft, ID_DROP_DB, "Delete");
+    btnViewOverall = new wxButton(panelTopLeft, ID_VIEW_OVERALL, "Open\noverall\ntable");
     buttonModeTest = new wxButton(panelTopLeft, ID_MODE_TEST, "Test mode");
     btnAddBook = new wxButton(panelTopRight, ID_ADD_BOOKING, "Add");
+    btnEditBook = new wxButton(panelTopRight, ID_EDIT_BOOKING, "Edit");
     btnViewBook = new wxButton(panelTopRight, ID_VIEW_BOOKING, "View");
     btnDelBook = new wxButton(panelTopRight, ID_DELETE_BOOKING, "Delete");
     buttonAddGuest = new wxButton(panelTopRight, ID_ADD_GUEST, "Add");
@@ -939,8 +1047,10 @@ FrameMenu::FrameMenu() :
     Connect(ID_CREATE_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnCreateDB));
     Connect(ID_DROP_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnDropDB));
     Connect(ID_CHECK_DB, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnCheckDB));
+    Connect(ID_VIEW_OVERALL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnViewOverall));
     Connect(ID_MODE_TEST, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnModeTest));
     Connect(ID_ADD_BOOKING, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAddBook));
+    Connect(ID_EDIT_BOOKING, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnEditBook));
     Connect(ID_VIEW_BOOKING, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnViewBook));
     Connect(ID_DELETE_BOOKING, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnDeleteBook));
     Connect(ID_ADD_GUEST, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FrameMenu::OnAddGuest));
@@ -970,11 +1080,13 @@ FrameMenu::FrameMenu() :
     vSizerControlDB->Add(buttonCheckDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
     vSizerControlDB->AddSpacer(20);
     vSizerControlDB->Add(buttonCreateDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
-    vSizerControlDB->Add(buttonDropDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT | wxBOTTOM, 5);
+    vSizerControlDB->Add(buttonDropDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSizerControlDB->Add(btnViewOverall, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT | wxBOTTOM, 5);
     vSizerTopLeft->Add(vSizerControlDB, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
     vSizerTopLeft->AddSpacer(20);
     vSizerTopLeft->Add(buttonModeTest, 0, wxALIGN_CENTER | wxTOP | wxLEFT, 5);
     vSzrControlBook->Add(btnAddBook, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
+    vSzrControlBook->Add(btnEditBook, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
     vSzrControlBook->Add(btnViewBook, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT, 5);
     vSzrControlBook->Add(btnDelBook, 0, wxALIGN_CENTER | wxTOP | wxLEFT | wxRIGHT | wxBOTTOM, 5);
     gSizerTopRight->Add(vSzrControlBook, 0, wxALIGN_CENTER | wxTOP, 5);
@@ -1013,7 +1125,9 @@ void FrameMenu::AssumeDBCreated()
 {
     buttonCreateDB->Enable(false);
     buttonDropDB->Enable(true);
+    btnViewOverall->Enable(true);
     btnAddBook->Enable(true);
+    btnEditBook->Enable(true);
     btnViewBook->Enable(true);
     btnDelBook->Enable(true);
     btnAddLink->Enable(true);
@@ -1031,7 +1145,9 @@ void FrameMenu::AssumeDBDropped()
 {
     buttonCreateDB->Enable(true);
     buttonDropDB->Enable(false);
+    btnViewOverall->Enable(false);
     btnAddBook->Enable(false);
+    btnEditBook->Enable(false);
     btnViewBook->Enable(false);
     btnDelBook->Enable(false);
     btnAddLink->Enable(false);
@@ -1049,7 +1165,9 @@ void FrameMenu::AssumeDBError()
 {
     buttonCreateDB->Enable(false);
     buttonDropDB->Enable(false);
+    btnViewOverall->Enable(false);
     btnAddBook->Enable(false);
+    btnEditBook->Enable(false);
     btnViewBook->Enable(false);
     btnDelBook->Enable(false);
     btnAddLink->Enable(false);
@@ -1121,6 +1239,12 @@ void FrameMenu::OnCheckDB(wxCommandEvent &event)
     }
 }
 
+void FrameMenu::OnViewOverall(wxCommandEvent &event)
+{
+    DialogViewOverall *dialogViewOverall = new DialogViewOverall(this, textFieldDBName->GetValue().ToStdString());
+    dialogViewOverall->Show(true);
+}
+
 void FrameMenu::OnModeTest(wxCommandEvent &event)
 {
     if(modeTest == false) {
@@ -1143,6 +1267,13 @@ void FrameMenu::OnAddBook(wxCommandEvent &event)
     DialogAddBook *dialogAddBook = new DialogAddBook(this, textFieldDBName->GetValue().ToStdString());
     dialogAddBook->ShowModal();
     dialogAddBook->Destroy();
+}
+
+void FrameMenu::OnEditBook(wxCommandEvent &event)
+{
+    DialogEditBook * dialogEditBook = new DialogEditBook(this, textFieldDBName->GetValue().ToStdString());
+    dialogEditBook->ShowModal();
+    dialogEditBook->Destroy();
 }
 
 void FrameMenu::OnViewBook(wxCommandEvent &event)
