@@ -95,14 +95,24 @@ public:
 private:
     std::string dbName;
 
+    wxStaticText *staticTextArrival;
+    wxStaticText *staticTextDeparture;
+    wxStaticText *staticTextDate;
+    wxStaticText *staticTextRoom;
+    wxStaticText *staticTextCard;
+    wxStaticText *sTxtEmpty;
     wxTextCtrl *txtFldArrival;
     wxTextCtrl *txtFldDeparture;
     wxTextCtrl *txtFldDate;
     wxTextCtrl *txtFldRoom;
     wxTextCtrl *txtFldCard;
-    wxStaticText *sTxtEmpty;
     wxButton *btnAdd;
     wxButton *btnCancel;
+    wxBoxSizer *hSzrStaticTextArrival;
+    wxBoxSizer *hSzrStaticTextDeparture;
+    wxBoxSizer *hSzrStaticTextDate;
+    wxBoxSizer *hSzrStaticTextRoom;
+    wxBoxSizer *hSzrStaticTextCard;
     wxBoxSizer *hSzrFldArrival;
     wxBoxSizer *hSzrFldDeparture;
     wxBoxSizer *hSzrFldDate;
@@ -122,11 +132,15 @@ public:
 private:
     std::string dbName;
 
+    wxStaticText *staticTextBookID;
+    wxStaticText *staticTextRoomID;
     wxTextCtrl *txtFldBookID;
     wxTextCtrl *txtFldRoomID;
     wxStaticText *sTxtEmpty;
     wxButton *btnApply;
     wxButton *btnCancel;
+    wxBoxSizer *hSzrStaticTextBookID;
+    wxBoxSizer *hSzrStaticTextRoomID;
     wxBoxSizer *hSzrFldBookID;
     wxBoxSizer *hSzrFldRoomID;
     wxBoxSizer *hSzrBtns;

@@ -129,13 +129,13 @@ bool queryClearTable(std::string connection, std::string dbToConnect, std::strin
 
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,
-                  std::string arrival, std::string departure, std::string date,
+                  std::string arrival, std::string departure,
                   std::string room, std::string card)
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
     wrk.exec((std::string) "SELECT insert_booking(\'" +
-             arrival + "\', \'" + departure + "\', \'" + date + "\', \'" +
+             arrival + "\', \'" + departure + "\', \'" +
              room + "\', \'" + card + "\');");
     wrk.commit();
 }

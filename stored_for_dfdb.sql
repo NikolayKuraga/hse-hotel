@@ -213,12 +213,11 @@ BEGIN
         'CREATE FUNCTION insert_booking(
             v_arrival DATE,
             v_departure DATE,
-            v_booking_date DATE,
             v_hotel_room_id INTEGER,
             v_bank_card VARCHAR(19)) RETURNS VOID AS $insert_booking$
         BEGIN
-            INSERT INTO booking(arrival, departure, booking_date, hotel_room_id, bank_card)
-            VALUES (v_arrival, v_departure, v_booking_date, v_hotel_room_id, v_bank_card);
+            INSERT INTO booking(arrival, departure, hotel_room_id, bank_card)
+            VALUES (v_arrival, v_departure, v_hotel_room_id, v_bank_card);
         END;
         $insert_booking$ LANGUAGE plpgsql');
     PERFORM dblink_exec('myconn',

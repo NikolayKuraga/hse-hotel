@@ -28,7 +28,7 @@ bool queryClearTable(std::string connection, std::string dbToConnect, std::strin
 
 // booking queries
 void queryAddBook(std::string connection, std::string dbToConnect,
-                  std::string arrival, std::string departure, std::string date,
+                  std::string arrival, std::string departure,
                   std::string room, std::string card);
 bool queryEditBook(std::string connection, std::string dbToConnect,
                    std::string book_id, std::string room_id);
