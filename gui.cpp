@@ -658,22 +658,30 @@ void DialogDeleteGuest::OnDelete(wxCommandEvent &event)
 DialogAddLink::DialogAddLink(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, "Link guest with booking"), dbName(dbName)
 {
-    txtFldBookID = new wxTextCtrl(this, wxID_ANY, "<book ID>");
-    txtFldGuestID = new wxTextCtrl(this, wxID_ANY, "<guest ID>");
+    staticTextBookID = new wxStaticText(this, wxID_ANY, "Booking ID:");
+    staticTextGuestID = new wxStaticText(this, wxID_ANY, "Guest ID:");
+    txtFldBookID = new wxTextCtrl(this, wxID_ANY, "");
+    txtFldGuestID = new wxTextCtrl(this, wxID_ANY, "");
     sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    btnAdd = new wxButton(this, ID_ADD_LINK_ADD, "Link!");
+    btnAdd = new wxButton(this, ID_ADD_LINK_ADD, "Link");
     btnCancel = new wxButton(this, wxID_OK, "Cancel");
     Connect(ID_ADD_LINK_ADD, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogAddLink::OnAdd));
+    hSzrStaticTextBookID = new wxBoxSizer(wxHORIZONTAL);
+    hSzrStaticTextGuestID = new wxBoxSizer(wxHORIZONTAL);
     hSzrFldBookID = new wxBoxSizer(wxHORIZONTAL);
     hSzrFldGuestID = new wxBoxSizer(wxHORIZONTAL);
     hSzrBtns = new wxBoxSizer(wxHORIZONTAL);
     gSzrMain = new wxGridSizer(2);
+    hSzrStaticTextBookID->Add(staticTextBookID, 1, wxCENTRE | wxLEFT | wxRIGHT, 5);
+    hSzrStaticTextGuestID->Add(staticTextGuestID, 1, wxCENTRE | wxLEFT | wxRIGHT, 5);
     hSzrFldBookID->Add(txtFldBookID, 1, wxLEFT | wxRIGHT, 5);
-    hSzrFldGuestID->Add(txtFldGuestID, 1, wxLEFT, 5);
+    hSzrFldGuestID->Add(txtFldGuestID, 1, wxLEFT | wxRIGHT, 5);
     hSzrBtns->Add(btnAdd, 1, wxLEFT, 5);
     hSzrBtns->Add(btnCancel, 1, wxLEFT | wxRIGHT, 5);
-    gSzrMain->Add(hSzrFldBookID, 0, wxEXPAND | wxTOP, 5);
-    gSzrMain->Add(hSzrFldGuestID, 0, wxEXPAND | wxTOP, 5);
+    gSzrMain->Add(hSzrStaticTextBookID, 0, wxEXPAND, 0);
+    gSzrMain->Add(hSzrStaticTextGuestID, 0, wxEXPAND, 0);
+    gSzrMain->Add(hSzrFldBookID, 0, wxEXPAND, 0);
+    gSzrMain->Add(hSzrFldGuestID, 0, wxEXPAND, 0);
     gSzrMain->Add(sTxtEmpty, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
     gSzrMain->Add(hSzrBtns, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
     SetSizerAndFit(gSzrMain);

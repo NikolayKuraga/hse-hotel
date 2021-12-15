@@ -298,11 +298,15 @@ public:
 private:
     std::string dbName;
 
+    wxStaticText *staticTextBookID;
+    wxStaticText *staticTextGuestID;
     wxTextCtrl *txtFldBookID;
     wxTextCtrl *txtFldGuestID;
     wxStaticText *sTxtEmpty;
     wxButton *btnAdd;
     wxButton *btnCancel;
+    wxBoxSizer *hSzrStaticTextBookID;
+    wxBoxSizer *hSzrStaticTextGuestID;
     wxBoxSizer *hSzrFldBookID;
     wxBoxSizer *hSzrFldGuestID;
     wxBoxSizer *hSzrBtns;
