@@ -120,26 +120,43 @@ CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
 		END IF;
     END;
     $find_free_rooms$ LANGUAGE plpgsql;
-        
+    
 CREATE OR REPLACE FUNCTION find_guest(
-    lst_name VARCHAR(30), frst_name VARCHAR(20)) RETURNS TABLE(
+	lst_name VARCHAR(30), frst_name VARCHAR(20))
+    RETURNS TABLE(
+    guest_id INTEGER,
     last_name VARCHAR(30),
     first_name VARCHAR(20),
     patronimic VARCHAR(20),
+    passport_series VARCHAR(4),
+    passport_number VARCHAR(6),
+    phone VARCHAR(10),
+    booking_id INTEGER,
     arrival DATE,
     departure DATE,
+    booking_date DATE,
     hotel_room_id INTEGER,
-    total_cost NUMERIC(8, 2)) AS
+    total_cost NUMERIC(8, 2),
+    bank_card VARCHAR(19),
+    price_per_day NUMERIC(7, 2),
+    number_of_rooms INTEGER,
+    area INTEGER,
+    service_class VARCHAR(8),
+    kitchen BOOL) AS
     $find_guest$
     BEGIN
-        RETURN QUERY SELECT guest.last_name, guest.first_name, guest.patronimic,
-            booking.arrival, booking.departure, booking.hotel_room_id, booking.total_cost
-            FROM guest, booking, booking_guest
-            WHERE guest.guest_id = booking_guest.guest_id AND
-            booking_guest.booking_id = booking.booking_id AND
-            guest.last_name = lst_name AND
-            guest.first_name = frst_name;
-    END;
+        RETURN QUERY SELECT guest.guest_id, guest.last_name, guest.first_name, 
+			guest.patronimic, guest.passport_series, guest.passport_number, guest.phone,
+			booking.booking_id, booking.arrival, booking.departure, booking.booking_date, 
+			booking.hotel_room_id, booking.total_cost, booking.bank_card,
+			hotel_room.price_per_day, hotel_room.number_of_rooms, hotel_room.area, 
+			hotel_room.service_class, hotel_room.kitchen
+		FROM guest, hotel_room, booking, booking_guest
+		WHERE guest.last_name = lst_name AND guest.first_name = frst_name AND 
+			hotel_room.hotel_room_id = booking.hotel_room_id AND 
+			booking.booking_id = booking_guest.booking_id AND 
+			guest.guest_id = booking_guest.guest_id;
+	END;
     $find_guest$ LANGUAGE plpgsql;
 
 -- create a stored function to insert rows into the table 'guest'
