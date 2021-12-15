@@ -837,13 +837,18 @@ void DialogDelLink::OnRadioDelAll(wxCommandEvent &event)
 DialogAddRoom::DialogAddRoom(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, "Add hotel room"), dbName(dbName)
 {
-    textFieldRoomId = new wxTextCtrl(this, wxID_ANY, "<hotel room id>");
-    textFieldPrice = new wxTextCtrl(this, wxID_ANY, "<price per day>");
-    textFieldNumberOfRooms = new wxTextCtrl(this, wxID_ANY, "<number of rooms>");
-    textFieldArea = new wxTextCtrl(this, wxID_ANY, "<area>");
-    textFieldServiceClass = new wxTextCtrl(this, wxID_ANY, "<service class>");
-    textFieldKitchen = new wxTextCtrl(this, wxID_ANY, "<kitchen>");
-    sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    staticTextRoomId = new wxStaticText(this, wxID_ANY, "Hotel room ID:");
+    textFieldRoomId = new wxTextCtrl(this, wxID_ANY, "");
+    staticTextPrice = new wxStaticText(this, wxID_ANY, "Price per day:");
+    textFieldPrice = new wxTextCtrl(this, wxID_ANY, "");
+    staticTextNumberOfRooms = new wxStaticText(this, wxID_ANY, "Number of rooms:");
+    textFieldNumberOfRooms = new wxTextCtrl(this, wxID_ANY, "");
+    staticTextArea = new wxStaticText(this, wxID_ANY, "Area:");
+    textFieldArea = new wxTextCtrl(this, wxID_ANY, "");
+    staticTextServiceClass = new wxStaticText(this, wxID_ANY, "Service class:");
+    textFieldServiceClass = new wxTextCtrl(this, wxID_ANY, "");
+    staticTextKitchen = new wxStaticText(this, wxID_ANY, "Kitchen:");
+    textFieldKitchen = new wxTextCtrl(this, wxID_ANY, "");
     buttonAdd = new wxButton(this, ID_ADD_ROOM_ADD, "Add");
     buttonCancel = new wxButton(this, wxID_OK, "Cancel");
     Connect(ID_ADD_ROOM_ADD, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DialogAddRoom::OnAdd));
@@ -855,16 +860,27 @@ DialogAddRoom::DialogAddRoom(wxWindow *parent, std::string dbName) :
     hSizerRowTrdRight = new wxBoxSizer(wxHORIZONTAL);
     hSizerRowFthLeft = new wxBoxSizer(wxHORIZONTAL);
     hSizerRowFthRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowFfhLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowFfhRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSxthLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSxthRight = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSvthLeft = new wxBoxSizer(wxHORIZONTAL);
+    hSizerRowSvthRight = new wxBoxSizer(wxHORIZONTAL);
     gSizerMain = new wxGridSizer(2);
-    hSizerRowFstLeft->Add(textFieldRoomId, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFstRight->Add(textFieldPrice, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowSndLeft->Add(textFieldNumberOfRooms, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowSndRight->Add(textFieldArea, 1, wxTOP | wxLEFT, 5);
-    hSizerRowTrdLeft->Add(textFieldServiceClass, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowTrdRight->Add(textFieldKitchen, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthLeft->Add(sTxtEmpty, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthRight->Add(buttonAdd, 1, wxTOP | wxLEFT | wxRIGHT, 5);
-    hSizerRowFthRight->Add(buttonCancel, 1, wxTOP | wxLEFT | wxRIGHT, 5);
+    hSizerRowFstLeft->Add(staticTextRoomId, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowFstRight->Add(staticTextPrice, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowSndLeft->Add(textFieldRoomId, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowSndRight->Add(textFieldPrice, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowTrdLeft->Add(staticTextNumberOfRooms, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowTrdRight->Add(staticTextArea, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowFthLeft->Add(textFieldNumberOfRooms, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowFthRight->Add(textFieldArea, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowFfhLeft->Add(staticTextServiceClass, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowFfhRight->Add(staticTextKitchen, 1, wxALIGN_CENTRE | wxLEFT | wxRIGHT, 5);
+    hSizerRowSxthLeft->Add(textFieldServiceClass, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowSxthRight->Add(textFieldKitchen, 1, wxLEFT | wxRIGHT, 5);
+    hSizerRowSvthRight->Add(buttonAdd, 1, wxTOP | wxBOTTOM | wxLEFT, 5);
+    hSizerRowSvthRight->Add(buttonCancel, 1, wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, 5);
     gSizerMain->Add(hSizerRowFstLeft, 0, wxEXPAND, 0);
     gSizerMain->Add(hSizerRowFstRight, 0, wxEXPAND, 0);
     gSizerMain->Add(hSizerRowSndLeft, 0, wxEXPAND, 0);
@@ -873,7 +889,13 @@ DialogAddRoom::DialogAddRoom(wxWindow *parent, std::string dbName) :
     gSizerMain->Add(hSizerRowTrdRight, 0, wxEXPAND, 0);
     gSizerMain->Add(hSizerRowFthLeft, 0, wxEXPAND, 0);
     gSizerMain->Add(hSizerRowFthRight, 0, wxEXPAND, 0);
-    SetSizer(gSizerMain);
+    gSizerMain->Add(hSizerRowFfhLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowFfhRight, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSxthLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSxthRight, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSvthLeft, 0, wxEXPAND, 0);
+    gSizerMain->Add(hSizerRowSvthRight, 0, wxEXPAND, 0);
+    SetSizerAndFit(gSizerMain);
     SetSize(wxSize(400, 188));
 }
 

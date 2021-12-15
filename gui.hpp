@@ -366,13 +366,20 @@ public:
 private:
     std::string dbName;
 
+    wxStaticText *staticTextRoomId;
+    wxStaticText *staticTextPrice;
+    wxStaticText *staticTextNumberOfRooms;
+    wxStaticText *staticTextArea;
+    wxStaticText *staticTextServiceClass;
+    wxStaticText *staticTextKitchen;
+    
     wxTextCtrl *textFieldRoomId;
     wxTextCtrl *textFieldPrice;
     wxTextCtrl *textFieldNumberOfRooms;
     wxTextCtrl *textFieldArea;
     wxTextCtrl *textFieldServiceClass;
     wxTextCtrl *textFieldKitchen;
-    wxStaticText *sTxtEmpty;
+    
     wxButton *buttonAdd;
     wxButton *buttonCancel;
 
@@ -384,7 +391,14 @@ private:
     wxBoxSizer *hSizerRowTrdRight;
     wxBoxSizer *hSizerRowFthLeft;
     wxBoxSizer *hSizerRowFthRight;
+    wxBoxSizer *hSizerRowFfhLeft;
+    wxBoxSizer *hSizerRowFfhRight;
+    wxBoxSizer *hSizerRowSxthLeft;
+    wxBoxSizer *hSizerRowSxthRight;
+    wxBoxSizer *hSizerRowSvthLeft;
+    wxBoxSizer *hSizerRowSvthRight;
     wxGridSizer *gSizerMain;
+
 
     void OnAdd(wxCommandEvent &event);
 };
