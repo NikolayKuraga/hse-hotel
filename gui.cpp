@@ -3,7 +3,7 @@
 DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName):
     wxDialog(parent, wxID_ANY, (std::string) "Overall table (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
-    overallLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    overallTbl = new wxListView(this, wxID_ANY);
     txtFldLstName = new wxTextCtrl(this, wxID_ANY, "<last name>");
     txtFldFstName = new wxTextCtrl(this, wxID_ANY, "<first name>");
     btnFind = new wxButton(this, ID_VIEW_OVERALL_FIND, "Find");
@@ -21,7 +21,7 @@ DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName):
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
-    vSzrMain->Add(overallLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(overallTbl, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
@@ -29,14 +29,20 @@ DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName):
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintOverallTable(DF_CNN, dbName);
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            overallTbl->AppendColumn(*jt);
         }
-        overallLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            overallTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                overallTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
     catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
@@ -45,36 +51,50 @@ DialogViewOverall::DialogViewOverall(wxWindow *parent, std::string dbName):
 
 void DialogViewOverall::OnFind(wxCommandEvent &event)
 {
-	try {
+    overallTbl->ClearAll();
+    try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryFindBookingByName(DF_CNN, dbName, txtFldLstName->GetValue().ToStdString(), txtFldFstName->GetValue().ToStdString());
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            overallTbl->AppendColumn(*jt);
         }
-        overallLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            overallTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                overallTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewOverall::OnPrintAll(wxCommandEvent &event)
 {
+    overallTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintOverallTable(DF_CNN, dbName);
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            overallTbl->AppendColumn(*jt);
         }
-        overallLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            overallTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                overallTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
     catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
@@ -188,7 +208,7 @@ void DialogEditBook::OnApply(wxCommandEvent &event)
 DialogViewBook::DialogViewBook(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, (std::string) "Bookings (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
-    bookLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    bookTbl = new wxListView(this, wxID_ANY);
     sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
     btnPrintAll = new wxButton(this, ID_VIEW_BOOKING_PRINT_ALL, "Print All");
     btnClose = new wxButton(this, ID_VIEW_BOOKING_CLOSE, "Close");
@@ -200,7 +220,7 @@ DialogViewBook::DialogViewBook(wxWindow *parent, std::string dbName) :
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
-    vSzrMain->Add(bookLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(bookTbl, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
@@ -208,35 +228,48 @@ DialogViewBook::DialogViewBook(wxWindow *parent, std::string dbName) :
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "booking");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            bookTbl->AppendColumn(*jt);
         }
-        bookLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            bookTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                bookTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewBook::OnPrintAll(wxCommandEvent &event)
 {
+    bookTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "booking");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            bookTbl->AppendColumn(*jt);
         }
-        bookLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            bookTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                bookTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
@@ -390,7 +423,7 @@ void DialogAddGuest::OnAdd(wxCommandEvent &event)
 DialogViewGuest::DialogViewGuest(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, (std::string) "Guests (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
-    guestLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    guestTbl = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
     txtFldLstName = new wxTextCtrl(this, wxID_ANY, "<last name>");
     txtFldFstName = new wxTextCtrl(this, wxID_ANY, "<first name>");
     btnFind = new wxButton(this, ID_VIEW_GUEST_FIND, "Find");
@@ -408,7 +441,7 @@ DialogViewGuest::DialogViewGuest(wxWindow *parent, std::string dbName) :
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
-    vSzrMain->Add(guestLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(guestTbl, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
@@ -416,56 +449,76 @@ DialogViewGuest::DialogViewGuest(wxWindow *parent, std::string dbName) :
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "guest");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            guestTbl->AppendColumn(*jt);
         }
-        guestLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            guestTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                guestTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewGuest::OnFind(wxCommandEvent &event)
 {
+    guestTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "guest");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            guestTbl->AppendColumn(*jt);
+        }
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
             if(it == tbl.cbegin() || (it->at(1) == txtFldLstName->GetValue() && it->at(2) == txtFldFstName->GetValue())) {
-                for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                    txt += *jt + ' ';
+                guestTbl->InsertItem(i, *(it->cbegin()));
+                int j = 1;
+                for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                    guestTbl->SetItem(i, j++, *jt);
                 }
-                txt += '\n';
+                ++i;
             }
         }
-        guestLst->SetValue(txt);
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
-    }
+   }
 }
 
 void DialogViewGuest::OnPrintAll(wxCommandEvent &event)
 {
+    guestTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "guest");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            guestTbl->AppendColumn(*jt);
         }
-        guestLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            guestTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                guestTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
@@ -678,7 +731,7 @@ void DialogAddLink::OnAdd(wxCommandEvent &event)
 DialogViewLink::DialogViewLink(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, (std::string) "Links (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
-    linkLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    linkTbl = new wxListView(this, wxID_ANY);
     sTxtEmpty = new wxStaticText(this, wxID_ANY, wxEmptyString);
     btnPrintAll = new wxButton(this, ID_VIEW_LINK_PRINT_ALL, "Print All");
     btnClose = new wxButton(this, ID_VIEW_LINK_CLOSE, "Close");
@@ -690,7 +743,7 @@ DialogViewLink::DialogViewLink(wxWindow *parent, std::string dbName) :
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnClose, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 5);
-    vSzrMain->Add(linkLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(linkTbl, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
@@ -698,35 +751,48 @@ DialogViewLink::DialogViewLink(wxWindow *parent, std::string dbName) :
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "booking_guest");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            linkTbl->AppendColumn(*jt);
         }
-        linkLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            linkTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                linkTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewLink::OnPrintAll(wxCommandEvent &event)
 {
+    linkTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "booking_guest");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            linkTbl->AppendColumn(*jt);
         }
-        linkLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            linkTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                linkTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
@@ -739,7 +805,7 @@ void DialogViewLink::OnClose(wxCommandEvent &event)
 DialogDelLink::DialogDelLink(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, "Unlink guest with booking"), dbName(dbName)
 {
-	radio = ID_DELETE_LINK_RADIO_ID;
+    radio = ID_DELETE_LINK_RADIO_ID;
     rBtnID = new wxRadioButton(this, ID_DELETE_LINK_RADIO_ID, "Delete the link by the booking ID and the guest ID:");
     rBtnDelAll = new wxRadioButton(this, ID_DELETE_LINK_RADIO_DELETE_ALL, "Delete all links (clear the table)");
     txtFldBookingID = new wxTextCtrl(this, wxID_ANY, "<booking ID>");
@@ -879,7 +945,7 @@ void DialogAddRoom::OnAdd(wxCommandEvent &event)
 DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
     wxDialog(parent, wxID_ANY, (std::string) "Hotel Rooms (" + dbName + ")", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), dbName(dbName)
 {
-    roomLst = new wxRichTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxRE_READONLY);
+    roomTbl = new wxListView(this, wxID_ANY);
     txtFldArrival = new wxTextCtrl(this, wxID_ANY, "<arrival>");
     txtFldDeparture = new wxTextCtrl(this, wxID_ANY, "<departure>");
     btnFind = new wxButton(this, ID_VIEW_ROOM_FIND, "Find free room");
@@ -897,7 +963,7 @@ DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
     hSzrBtm->Add(btnPrintAll, 0, wxLEFT | wxTOP | wxBOTTOM, 5);
     hSzrBtm->AddSpacer(20);
     hSzrBtm->Add(btnCancel, 0, wxALL, 5);
-    vSzrMain->Add(roomLst, 1, wxEXPAND, 0);
+    vSzrMain->Add(roomTbl, 1, wxEXPAND, 0);
     vSzrMain->Add(hSzrBtm, 0, wxEXPAND, 0);
     SetSizer(vSzrMain);
     SetMinSize(wxSize(520, 400));
@@ -905,54 +971,74 @@ DialogViewRoom::DialogViewRoom(wxWindow *parent, std::string dbName) :
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            roomTbl->AppendColumn(*jt);
         }
-        roomLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            roomTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                roomTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewRoom::OnFind(wxCommandEvent &event)
 {
-	try {
+    roomTbl->ClearAll();
+    try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryFindRooms(DF_CNN, dbName, txtFldArrival->GetValue().ToStdString(), txtFldDeparture->GetValue().ToStdString());
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            roomTbl->AppendColumn(*jt);
         }
-        roomLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            roomTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                roomTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
 
 void DialogViewRoom::OnPrintAll(wxCommandEvent &event)
 {
+    roomTbl->ClearAll();
     try {
         std::vector<std::vector<std::string>> tbl;
         tbl = queryPrintTable(DF_CNN, dbName, "hotel_room");
-        std::string txt;
-        for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
-                txt += *jt + ' ';
-            }
-            txt += '\n';
+        std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin();
+        for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
+            roomTbl->AppendColumn(*jt);
         }
-        roomLst->SetValue(txt);
+        ++it;
+        int i = 0;
+        for(; it != tbl.cend(); ++it) {
+            roomTbl->InsertItem(i, *(it->cbegin()));
+            int j = 1;
+            for(std::vector<std::string>::const_iterator jt = it->cbegin() + 1; jt != it->cend(); ++jt) {
+                roomTbl->SetItem(i, j++, *jt);
+            }
+            ++i;
+        }
     }
-    catch(const std::exception &e) {
+    catch (const std::exception &e) {
         wxMessageBox((std::string) "Error:\n" + e.what(), "Error!", wxOK | wxCENTRE | wxICON_ERROR);
     }
 }
