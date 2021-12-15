@@ -5,9 +5,10 @@
 #include <vector>
 #include <wx/wx.h>
 #include <wx/richtext/richtextctrl.h>
+#include <wx/listctrl.h>
 #include "dbi.hpp"
 
-#define VERSION   "2021.12.14"
+#define VERSION   "2021.12.15"
 #define GITHUB    "https://github.com/NikolayKuraga/hse-hotel"
 #define PATH_ICON "icon.png"
 
@@ -73,7 +74,7 @@ public:
 private:
     std::string dbName;
 
-    wxRichTextCtrl *overallLst;
+    wxListView *overallTbl;
     wxTextCtrl *txtFldLstName;
     wxTextCtrl *txtFldFstName;
     wxButton *btnFind;
@@ -157,7 +158,7 @@ public:
 private:
     std::string dbName;
 
-    wxRichTextCtrl *bookLst;
+    wxListView *bookTbl;
     wxStaticText *sTxtEmpty;
     wxButton *btnPrintAll;
     wxButton *btnClose;
@@ -248,7 +249,7 @@ public:
 private:
     std::string dbName;
 
-    wxRichTextCtrl *guestLst;
+    wxListCtrl *guestTbl;
     wxTextCtrl *txtFldLstName;
     wxTextCtrl *txtFldFstName;
     wxButton *btnFind;
@@ -337,7 +338,7 @@ public:
 private:
     std::string dbName;
 
-    wxRichTextCtrl *linkLst;
+    wxListView *linkTbl;
     wxStaticText *sTxtEmpty;
     wxButton *btnPrintAll;
     wxButton *btnClose;
@@ -431,7 +432,7 @@ private:
     
     wxTextCtrl *txtFldArrival;
     wxTextCtrl *txtFldDeparture;
-    wxRichTextCtrl *roomLst;
+    wxListView *roomTbl;
     wxButton *btnFind;
     wxButton *btnPrintAll;
     wxButton *btnCancel;
