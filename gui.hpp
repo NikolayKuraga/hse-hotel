@@ -190,25 +190,37 @@ public:
 private:
     std::string dbName;
 
+    wxStaticText *staticTextFirstName;
+    wxStaticText *staticTextLastName;
+    wxStaticText *staticTextPatronymic;
+    wxStaticText *staticTextPassportSeries;
+    wxStaticText *staticTextPassportNumber;
+    wxStaticText *staticTextPhone;
+    
     wxTextCtrl *textFieldFirstName;
     wxTextCtrl *textFieldLastName;
-    wxStaticText *staticTextRowSndLeft;
     wxTextCtrl *textFieldPatronymic;
     wxTextCtrl *textFieldPassportSeries;
     wxTextCtrl *textFieldPassportNumber;
-    wxStaticText *staticTextRowFthLeft;
     wxTextCtrl *textFieldPhone;
-    wxStaticText *staticTextRowFfhLeft;
+    
     wxButton *buttonAdd;
     wxButton *buttonCancel;
 
     wxBoxSizer *hSizerRowFstLeft;
     wxBoxSizer *hSizerRowFstRight;
+    wxBoxSizer *hSizerRowSndLeft;
     wxBoxSizer *hSizerRowSndRight;
     wxBoxSizer *hSizerRowTrdLeft;
     wxBoxSizer *hSizerRowTrdRight;
+    wxBoxSizer *hSizerRowFthLeft;
     wxBoxSizer *hSizerRowFthRight;
+    wxBoxSizer *hSizerRowFfhLeft;
     wxBoxSizer *hSizerRowFfhRight;
+    wxBoxSizer *hSizerRowSxthLeft;
+    wxBoxSizer *hSizerRowSxthRight;
+    wxBoxSizer *hSizerRowSvthLeft;
+    wxBoxSizer *hSizerRowSvthRight;
     wxGridSizer *gSizerMain;
 
     void OnAdd(wxCommandEvent &event);
