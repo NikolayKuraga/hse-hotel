@@ -33,8 +33,17 @@ std::vector<std::vector<std::string>> queryPrintOverallTable(std::string connect
     pqxx::result r = wrk.exec((std::string) "SELECT * FROM print_full_info();");
     wrk.commit();
     std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cbegin()+1; ++it) {
+        std::vector<std::string> row;
+        
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+			row.push_back(r.column_name(column));
+		}
+		tbl.push_back(row);
+	}
     for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
         std::vector<std::string> row;
+        
         for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
             row.push_back(it[column].c_str());
         }
@@ -52,6 +61,14 @@ std::vector<std::vector<std::string>> queryFindBookingByName(std::string connect
              last_name + "\', \'" + first_name + "\');");
     wrk.commit();
     std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cbegin()+1; ++it) {
+        std::vector<std::string> row;
+        
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+			row.push_back(r.column_name(column));
+		}
+		tbl.push_back(row);
+	}
     for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
         std::vector<std::string> row;
         for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
@@ -72,6 +89,14 @@ std::vector<std::vector<std::string>> queryPrintTable(std::string connection, st
                               tableName + ");");
     wrk.commit();
     std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cbegin()+1; ++it) {
+        std::vector<std::string> row;
+        
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+			row.push_back(r.column_name(column));
+		}
+		tbl.push_back(row);
+	}
     for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
         std::vector<std::string> row;
         for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
@@ -201,10 +226,18 @@ std::vector<std::vector<std::string>> queryFindRooms(std::string connection, std
 {
     pqxx::connection cnn(connection + " dbname = " + dbToConnect);
     pqxx::work wrk(cnn);
-    pqxx::result r = wrk.exec((std::string) "SELECT find_free_rooms(\'" +
+    pqxx::result r = wrk.exec((std::string) "SELECT * FROM find_free_rooms(\'" +
              arrival + "\', \'" + departure + "\');");
     wrk.commit();
     std::vector<std::vector<std::string>> tbl;
+    for(pqxx::result::const_iterator it = r.cbegin(); it != r.cbegin()+1; ++it) {
+        std::vector<std::string> row;
+        
+        for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {
+			row.push_back(r.column_name(column));
+		}
+		tbl.push_back(row);
+	}
     for(pqxx::result::const_iterator it = r.cbegin(); it != r.cend(); ++it) {
         std::vector<std::string> row;
         for(pqxx::row_size_type column = 0; column < r.columns(); ++column) {

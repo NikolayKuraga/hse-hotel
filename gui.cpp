@@ -437,7 +437,7 @@ void DialogViewGuest::OnFind(wxCommandEvent &event)
         tbl = queryPrintTable(DF_CNN, dbName, "guest");
         std::string txt;
         for(std::vector<std::vector<std::string>>::const_iterator it = tbl.cbegin(); it != tbl.cend(); ++it) {
-            if(it->at(1) == txtFldLstName->GetValue() && it->at(2) == txtFldFstName->GetValue()) {
+            if(it == tbl.cbegin() || (it->at(1) == txtFldLstName->GetValue() && it->at(2) == txtFldFstName->GetValue())) {
                 for(std::vector<std::string>::const_iterator jt = it->cbegin(); jt != it->cend(); ++jt) {
                     txt += *jt + ' ';
                 }
