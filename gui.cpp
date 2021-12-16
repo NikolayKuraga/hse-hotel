@@ -695,7 +695,7 @@ void DialogDeleteGuest::OnDelete(wxCommandEvent &event)
                 EndModal(ID_DELETE_GUEST_DELETE);
             }
             else {
-                wxMessageBox("There are no guesta with such passport data!\nNo one was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+                wxMessageBox("There are no guests with such passport data!\nNo one was deleted!", "Warning!", wxOK | wxCENTRE | wxICON_EXCLAMATION);
             }
         }
         else if(radio == ID_DELETE_GUEST_RADIO_NAME) {

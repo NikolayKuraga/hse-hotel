@@ -96,7 +96,7 @@ CREATE TRIGGER cost_trigger
     FOR EACH ROW
     EXECUTE PROCEDURE calc_cost();
         
-CREATE INDEX guest_name ON guest(last_name, first_name, patronimic);
+CREATE INDEX guest_name ON guest(last_name, first_name);
 
 CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
     hotel_room_id INTEGER,

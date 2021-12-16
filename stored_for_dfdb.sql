@@ -122,7 +122,7 @@ BEGIN
         FOR EACH ROW
         EXECUTE PROCEDURE calc_cost()');
     PERFORM dblink_exec('myconn',
-         'CREATE INDEX guest_name ON guest(last_name, first_name, patronimic)');
+         'CREATE INDEX guest_name ON guest(last_name, first_name)');
     PERFORM dblink_exec('myconn',
          'CREATE OR REPLACE FUNCTION find_free_rooms(arr text, dep text) RETURNS TABLE(
 		hotel_room_id INTEGER,
