@@ -1,12 +1,14 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
-  workflow_dispatch:
+env:
+  nameapp: ${{ github.head_ref }}_to_${{ github.base_ref }}__${{ github.run_number }}
 
 jobs:
   build:
@@ -14,16 +16,26 @@ jobs:
       ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Update package lists, upgrade packages
-        run: sudo apt update
-
+      - name: Print env
+        run: env
+      - name: Update package lists, install needed packages
+        run: sudo apt update && sudo apt install libpqxx-dev libwxgtk3.0-gtk3-dev
       - name: Build application
         run: make
-
-      - name: Upload Artifact
+      - name: Prepare artifact for uploading
+        run: mv main.run app__${{ runner.os }}__${{ env.nameapp }}.sh
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: application
-          path: main.run
+          path: app__${{ runner.os }}__${{ env.nameapp }}.sh
           retention-days: 5
+      # - name: Send notification in telegram
+      #   with:
+      #     to: ${{ secrets.TELEGRAM_TO }}
+      #     token: ${{ secrets.TELEGRAM_TOKEN }}
+      #     message: |
+      #       ${{ github.actor }} created commit.
+      #       Message:    ${{ github.event.commits[0].message }}
+      #       Repository: ${{ github.repository }}
+      #       Changes:    https://github.com/${{ github.repository }}/commit/${{ github.sha }}
