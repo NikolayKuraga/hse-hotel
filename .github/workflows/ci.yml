@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on:
+      ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update package lists, upgrade packages
+        run: sudo apt update
+
+      - name: Build application
+        run: make
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: application
+          path: main.run
+          retention-days: 5
