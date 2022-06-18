@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  NAMEAPP: ${{ GITHUB.HEAD_REF }}_>_${{ GITHUB.BASE_REF }}__${{ GITHUB.RUN_NUMBER }}
+  TEMPLATENAME: client_${{ github.sha }}_${{ github.run_number }}
 
 jobs:
   build:
@@ -25,22 +25,22 @@ jobs:
         run: sudo apt update && sudo apt install libpqxx-dev libwxgtk3.0-gtk3-dev
       - name: Build application
         run: make
-      - name: Prepare artifact for uploading
-        run: mv main.run client_${{ RUNNER.OS }}_>_${{ ENV.NAMEAPP }}.sh
+      - name: Prepare
+        run: mv main.run ${{ env.TEMPLATENAME }}_${{ runner.os }}.sh
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: client__${{ ENV.NAMEAPP }}.sh
-          path: client__${{ ENV.NAMEAPP }}__${{ RUNNER.OS }}.sh
+          name: ${{ env.TEMPLATENAME }}.sh
+          path: ${{ env.TEMPLATENAME }}_${{ runner.os }}.sh
           retention-days: 5
       # - name: Send notification in telegram
       #   uses: appleboy/telegram-action@master
       #   with:
-      #     to: ${{ SECRETS.TELEGRAM_TO }}
-      #     token: ${{ SECRETS.TELEGRAM_TOKEN }}
+      #     to: ${{ secrets.TELEGRAM_TO }}
+      #     token: ${{ secrets.TELEGRAM_TOKEN }}
       #     message: |
-      #       ${{ github.actor }} made an event ${{ GITHUB.EVENT_NAME }}.
-      #       Message:    ${{ GITHUB.EVENT.COMMITS[0].MESSAGE }}
-      #       Repository: ${{ GITHUB.REPOSITORY }}
-      #       Changes:    https://github.com/${{ GITHUB.REPOSITORY }}/commit/${{ GITHUB.SHA }}
-      #     document: client__${{ ENV.NAMEAPP }}.sh
+      #       ${{ github.actor }} made an event ${{ github.event_name }}.
+      #       Message:    ${{ github.event.commits[0].messages }}
+      #       Repository: ${{ github.repository }}
+      #       Changes:    https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+      #     document: client__${{ env.NAMEAPP }}.sh
