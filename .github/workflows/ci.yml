@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "master"
+      - "deploy"
+  pull_request:
+    branches:
+      - "master"
+  workflow_dispatch:
+
+ENV:
+  NAMEAPP: ${{ GITHUB.HEAD_REF }}_>_${{ GITHUB.BASE_REF }}__${{ GITHUB.RUN_NUMBER }}
+
+jobs:
+  build:
+    runs-on:
+      ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Print env
+        run: env
+      - name: Update package lists, install needed packages
+        run: sudo apt update && sudo apt install libpqxx-dev libwxgtk3.0-gtk3-dev
+      - name: Build application
+        run: make
+      - name: Prepare artifact for uploading
+        run: mv main.run client_${{ RUNNER.OS }}_>_${{ ENV.NAMEAPP }}.sh
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client__${{ ENV.NAMEAPP }}.sh
+          path: client__${{ ENV.NAMEAPP }}__${{ RUNNER.OS }}.sh
+          retention-days: 5
+      # - name: Send notification in telegram
+      #   uses: appleboy/telegram-action@master
+      #   with:
+      #     to: ${{ SECRETS.TELEGRAM_TO }}
+      #     token: ${{ SECRETS.TELEGRAM_TOKEN }}
+      #     message: |
+      #       ${{ github.actor }} made an event ${{ GITHUB.EVENT_NAME }}.
+      #       Message:    ${{ GITHUB.EVENT.COMMITS[0].MESSAGE }}
+      #       Repository: ${{ GITHUB.REPOSITORY }}
+      #       Changes:    https://github.com/${{ GITHUB.REPOSITORY }}/commit/${{ GITHUB.SHA }}
+      #     document: client__${{ ENV.NAMEAPP }}.sh
