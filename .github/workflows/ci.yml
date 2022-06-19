@@ -11,12 +11,13 @@ on:
   workflow_dispatch:
 
 env:
-  TEMPLATENAME: client_${{ github.sha }}_${{ github.run_number }}
+  CLIENT_NAME: client_${{ github.sha }}_${{ github.run_number }}_linux.sh
 
 jobs:
   build:
-    runs-on:
-      ubuntu-latest
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check-success.outputs.status }}
     steps:
       - uses: actions/checkout@v3
       - name: Print env
@@ -25,23 +26,52 @@ jobs:
         run: sudo apt update && sudo apt install libpqxx-dev libwxgtk3.0-gtk3-dev
       - name: Build application
         run: make
-      - name: Prepare artifact for uploading
-        run: mv main.run ${{ env.TEMPLATENAME }}_${{ runner.os }}.sh
-      - name: Upload artifact
+      - name: Prepare artifacts' folder and file for condition of status
+        if: always()
+        run: |
+          mkdir artifacts
+          echo ${{ job.status }} > artifacts/status.txt
+      - name: Print job status to outputs
+        id: check-success
+        if: always()
+        run: |
+          echo ::set-output name=status::$( echo ${{ job.status }} )
+      - name: Prepare built client for uploading as artifact
+        run:
+          mv main.run artifacts/${{ env.CLIENT_NAME }}
+      - name: List directory
+        if: always()
+        run: ls -laR
+      - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.TEMPLATENAME }}.sh
-          path: ${{ env.TEMPLATENAME }}_${{ runner.os }}.sh
-          retention-days: 5
+          name: ${{ env.CLIENT_NAME }}
+          path: artifacts
+
+  send-notification:
+    needs: build
+    if: always()
+    runs-on:
+      ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CLIENT_NAME }}
+          path: artifacts
+      - name: List directory
+        run: ls -laR
+      - name: Print build status
+        run: echo ${{ needs.build.outputs.status }}
       - name: Send notification in telegram
-        if: always()
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ${{ github.actor }} made an event -- ${{ github.event_name }}.
-            Repository: https://github.com/${{ github.repository }}
             Changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            Status: ${{ job.status }}
-          document: ${{ env.TEMPLATENAME }}_${{ runner.os }}.sh
+            Status: ${{ needs.build.outputs.status }}
+          document: artifacts/${{ env.CLIENT_NAME }}
