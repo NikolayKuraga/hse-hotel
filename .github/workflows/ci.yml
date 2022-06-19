@@ -20,9 +20,7 @@ jobs:
       status: ${{ steps.check-success.outputs.status }}
     steps:
       - uses: actions/checkout@v3
-      - name: Print env
-        run: env
-      - name: Update package lists, install needed packages
+      - name: Install needed libraries
         run: sudo apt update && sudo apt install libpqxx-dev libwxgtk3.0-gtk3-dev
       - name: Build application
         run: make
@@ -34,11 +32,9 @@ jobs:
       - name: Print job status to outputs
         id: check-success
         if: always()
-        run: |
-          echo ::set-output name=status::$( echo ${{ job.status }} )
+        run: echo ::set-output name=status::$( echo ${{ job.status }} )
       - name: Prepare built client for uploading as artifact
-        run:
-          mv main.run artifacts/${{ env.CLIENT_NAME }}
+        run: mv main.run artifacts/${{ env.CLIENT_NAME }}
       - name: List directory
         if: always()
         run: ls -laR
@@ -49,11 +45,10 @@ jobs:
           name: ${{ env.CLIENT_NAME }}
           path: artifacts
 
-  send-notification:
+  notify-telegram-curl:
     needs: build
     if: always()
-    runs-on:
-      ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Download artifacts
@@ -65,6 +60,34 @@ jobs:
         run: ls -laR
       - name: Print build status
         run: echo ${{ needs.build.outputs.status }}
+      - name: Install curl
+        run: sudo apt update && sudo apt install curl
+      - name: Send notification in telegram
+        run: |
+          printf -v message "%s\n%s\n%s\n%s" \
+            "${{ github.actor }} made an event -- ${{ github.event_name }}." \
+            "Changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}" \
+            "Status: ${{ needs.build.outputs.status }}" \
+            "Sent by cURL"
+          curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_TO }} \
+            -d text="$message"
+          if [ -e artifacts/${{ env.CLIENT_NAME }} ]; then
+            curl -s -F document=@"artifacts/${{ env.CLIENT_NAME }}" \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument?chat_id=${{ secrets.TELEGRAM_TO }}"
+          fi
+
+  notify-telegram-appleboy:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CLIENT_NAME }}
+          path: artifacts
       - name: Send notification in telegram
         uses: appleboy/telegram-action@master
         with:
@@ -74,4 +97,5 @@ jobs:
             ${{ github.actor }} made an event -- ${{ github.event_name }}.
             Changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
             Status: ${{ needs.build.outputs.status }}
+            Sent by appleboy/telegram-action
           document: artifacts/${{ env.CLIENT_NAME }}
