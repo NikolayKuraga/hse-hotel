@@ -3,7 +3,7 @@ CFLAGS=-g -Wall -Wfatal-errors -std=c++11 -DPQXX_HIDE_EXP_OPTIONAL
 
 all: main.run
 
-dbi.o: dbi.hpp dbi.cpp lol
+dbi.o: dbi.hpp dbi.cpp
 	$(CC) $(CFLAGS) -c dbi.cpp -o dbi.o
 
 gui.o: gui.hpp gui.cpp
