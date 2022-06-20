@@ -86,7 +86,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: ${{ env.CLIENT_NAME }}
+          name: hse_client
           path: artifacts
       - name: Send notification in telegram
         uses: appleboy/telegram-action@master
