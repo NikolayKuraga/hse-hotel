@@ -42,7 +42,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.CLIENT_NAME }}
+          name: hse_client
           path: artifacts
 
   notify-telegram-curl:
@@ -54,7 +54,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: ${{ env.CLIENT_NAME }}
+          name: hse_client
           path: artifacts
       - name: List directory
         run: ls -laR
